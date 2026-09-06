@@ -719,6 +719,16 @@ export const STARTER_WORKFLOWS_CATALOG: StarterWorkflowCatalog = {
         }
       },
       {
+        id: "ghcr-meta",
+        name: "Extract metadata (tags, labels) for Docker",
+        category: "setup",
+        kind: "uses",
+        uses: "docker/metadata-action@v5",
+        with: {
+          images: "ghcr.io/${{ github.repository }}"
+        }
+      },
+      {
         id: "ghcr-push",
         name: "Build and push Docker image",
         category: "deploy",
@@ -726,7 +736,8 @@ export const STARTER_WORKFLOWS_CATALOG: StarterWorkflowCatalog = {
         uses: "docker/build-push-action@v6",
         with: {
           push: true,
-          tags: "ghcr.io/${{ github.repository }}:latest"
+          tags: "${{ steps.ghcr-meta.outputs.tags }}",
+          labels: "${{ steps.ghcr-meta.outputs.labels }}"
         }
       }
     ]

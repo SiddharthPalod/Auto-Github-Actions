@@ -9,7 +9,7 @@ export const deployGhcrRule: Rule = {
     if (!dockerCap) return noMatch();
 
     const dockerfile = dockerCap?.evidence?.[0]?.source ?? "Dockerfile";
-    const context = dockerfile.includes("/") ? dockerfile.substring(0, dockerfile.lastIndexOf("/")) : ".";
+    const context = ".";
 
     return {
       matched: true,

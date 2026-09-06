@@ -1,4 +1,4 @@
-﻿import { parse } from "yaml";
+import { parse } from "yaml";
 import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@auto-gha/workflow-ir";
 import type { ReconciliationPlan, JobDiff, StepDiff, ReconciliationStatus } from "./types.js";
 
@@ -110,17 +110,24 @@ export function reconcileWorkflows(
         const preservedStep: WorkflowStep = rawStep.uses
           ? {
               kind: "uses",
+              id: rawStep.id,
               name: rawStep.name,
+              if: rawStep.if,
               uses: rawStep.uses,
               with: rawStep.with,
+              env: rawStep.env,
+              continueOnError: rawStep["continue-on-error"],
               source: "user-preserved"
             }
           : {
               kind: "run",
+              id: rawStep.id,
               name: rawStep.name,
+              if: rawStep.if,
               run: rawStep.run,
               env: rawStep.env,
               workingDirectory: rawStep["working-directory"],
+              continueOnError: rawStep["continue-on-error"],
               source: "user-preserved"
             };
 

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { ProjectState } from "@auto-gha/state";
 import type { WorkflowIR } from "@auto-gha/workflow-ir";
 import type { GeneratedSecurityArtifacts } from "@auto-gha/security";
@@ -58,7 +58,7 @@ describe("Phase 7 - GitHub PR Automation", () => {
       ]
     });
 
-    expect(body).toContain("## ðŸš€ Zero-Config CI/CD & Security Automation");
+    expect(body).toContain("## 🚀 Zero-Config CI/CD & Security Automation");
     expect(body).toContain("`rust`");
     expect(body).toContain("`cargo`");
     expect(body).toContain("**Rust CI**");

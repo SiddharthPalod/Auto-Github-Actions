@@ -14,7 +14,7 @@ export const dockerBuildRule: Rule = {
     }
 
     const dockerfile = docker?.evidence?.[0]?.source ?? "Dockerfile";
-    const context = dockerfile.includes("/") ? dockerfile.substring(0, dockerfile.lastIndexOf("/")) : ".";
+    const context = ".";
 
     return {
       matched: true,

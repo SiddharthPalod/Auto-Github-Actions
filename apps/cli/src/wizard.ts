@@ -12,24 +12,26 @@ import { withRepository, isRemoteUrl } from "./git.js";
 /**
  * Wizard v1: Minimalist, fast interactive flow with Security Policy support
  */
-export async function runInteractiveWizard(): Promise<void> {
+export async function runInteractiveWizard(initialTarget?: string): Promise<void> {
   intro(pc.bgCyan(pc.black(" Auto GitHub Actions (auto-gha) ")));
 
-  const targetInput = await text({
-    message: "Enter the repository path or GitHub URL to scan:",
-    placeholder: "./",
-    defaultValue: "./",
-    validate: (value) => {
-      if (!value || value.trim() === "") return "Please enter a valid path or URL.";
+  let target = initialTarget ? initialTarget.trim() : "";
+  if (!target) {
+    const targetInput = await text({
+      message: "Enter the repository path or GitHub URL to scan:",
+      placeholder: "./",
+      defaultValue: "./",
+      validate: (value) => {
+        if (!value || value.trim() === "") return "Please enter a valid path or URL.";
+      }
+    });
+
+    if (isCancel(targetInput)) {
+      cancel("Operation cancelled.");
+      process.exit(0);
     }
-  });
-
-  if (isCancel(targetInput)) {
-    cancel("Operation cancelled.");
-    process.exit(0);
+    target = String(targetInput).trim();
   }
-
-  const target = String(targetInput).trim();
   const s = spinner();
 
   try {

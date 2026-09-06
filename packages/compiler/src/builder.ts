@@ -1,4 +1,4 @@
-﻿import type { WorkflowPlan } from "@auto-gha/planner";
+import type { WorkflowPlan } from "@auto-gha/planner";
 import type { ResolvedWorkflowPlan, ResolvedPrimitive } from "@auto-gha/resolver";
 import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@auto-gha/workflow-ir";
 
@@ -411,6 +411,10 @@ export function buildWorkflowIR(
       runsOn: runner,
       if: deployGuardIf,
       needs: cdNeeds,
+      permissions: {
+        contents: "read",
+        packages: "write"
+      },
       steps: [CHECKOUT_STEP, ...ghcrDeploySteps]
     });
   }

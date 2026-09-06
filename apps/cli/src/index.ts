@@ -38,12 +38,12 @@ Examples:
   process.exit(0);
 }
 
-if (!isInspectMode && !targetArg) {
+if (!isInspectMode) {
   // Interactive Wizard Modes
   if (isV1) {
-    await runWizardV1();
+    await runWizardV1(targetArg);
   } else {
-    await runWizardV2();
+    await runWizardV2(targetArg);
   }
 } else {
   // Direct / Inspect Mode

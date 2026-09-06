@@ -2,14 +2,41 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { RepositoryContext } from "./detector.js";
 
-const IGNORED_DIRECTORIES = new Set([".git", "node_modules", "dist", ".turbo", ".next"]);
+const IGNORED_DIRECTORIES = new Set([
+  ".git",
+  "node_modules",
+  "dist",
+  "build",
+  "out",
+  "target",
+  "vendor",
+  ".turbo",
+  ".next",
+  ".nuxt",
+  ".output",
+  ".venv",
+  "venv",
+  "env",
+  "__pycache__",
+  ".pytest_cache",
+  ".gradle",
+  ".cargo",
+  "coverage",
+  ".cache"
+]);
 
 async function walk(
   directory: string,
   root: string,
   files: Set<string>
 ): Promise<void> {
-  const entries = await fs.readdir(directory, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await fs.readdir(directory, { withFileTypes: true });
+  } catch {
+    // Safely skip unreadable directories or broken symlinks
+    return;
+  }
 
   for (const entry of entries) {
     if (IGNORED_DIRECTORIES.has(entry.name)) {

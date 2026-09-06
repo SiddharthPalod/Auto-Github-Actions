@@ -7,6 +7,8 @@ export type WorkflowStep =
   | {
       id?: string;
       name?: string;
+      if?: string;
+      continueOnError?: boolean;
       kind: "uses";
       uses: string;
       with?: Record<string, string | number | boolean>;
@@ -16,6 +18,8 @@ export type WorkflowStep =
   | {
       id?: string;
       name?: string;
+      if?: string;
+      continueOnError?: boolean;
       kind: "run";
       run: string;
       env?: Record<string, string>;

@@ -27,29 +27,39 @@ function getRemoteRepoInfo(scanPath: string, targetUrl?: string): { owner: strin
   }
 }
 
+function isGitRepo(dirPath: string): boolean {
+  try {
+    execSync("git rev-parse --is-inside-work-tree", { cwd: dirPath, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Wizard v2: Clean multi-stage compilation pipeline with Unified Git Branching
  */
-export async function runInteractiveWizardV2(): Promise<void> {
+export async function runInteractiveWizardV2(initialTarget?: string): Promise<void> {
   console.clear();
   intro(pc.bgCyan(pc.black(" Auto GitHub Actions (auto-gha) ")));
 
-  // 1. Ask for repository target path or URL
-  const targetInput = await text({
-    message: "Enter the repository path or GitHub URL to scan:",
-    placeholder: "./",
-    defaultValue: "./",
-    validate: (value) => {
-      if (!value || value.trim() === "") return "Please enter a valid path or URL.";
+  let target = initialTarget ? initialTarget.trim() : "";
+  if (!target) {
+    const targetInput = await text({
+      message: "Enter the repository path or GitHub URL to scan:",
+      placeholder: "./",
+      defaultValue: "./",
+      validate: (value) => {
+        if (!value || value.trim() === "") return "Please enter a valid path or URL.";
+      }
+    });
+
+    if (isCancel(targetInput)) {
+      cancel("Operation cancelled.");
+      process.exit(0);
     }
-  });
-
-  if (isCancel(targetInput)) {
-    cancel("Operation cancelled.");
-    process.exit(0);
+    target = String(targetInput).trim();
   }
-
-  const target = String(targetInput).trim();
   const s = spinner();
 
   try {
@@ -294,28 +304,49 @@ export async function runInteractiveWizardV2(): Promise<void> {
           generatedFiles.push({ relativePath: ".github/workflows/code-scanning.yml", content: securityArtifacts.codeScanningYaml });
         }
 
-        // 5. Unified Delivery: Git Branching by Default
-        const defaultBranchName = `zcicd/setup-ci-${Date.now()}`;
-        const deliveryAction = await select({
-          message: "How would you like to apply these configurations?",
-          options: [
+        // 5. Unified Delivery: Git Branching or Local Directory Writing
+        const isRemote = isRemoteUrl(target);
+        const repoName = target.split("/").pop()?.replace(/\.git$/, "") || "repo";
+        const defaultSaveDir = `./${repoName}-ci`;
+        const defaultBranchName = `auto-gha/setup-ci-${Date.now()}`;
+
+        let deliveryOptions = [
+          {
+            value: "branch-commit",
+            label: `🌿 Create Git Branch & Commit Changes ${pc.green("(Recommended)")}`,
+            hint: `Creates branch '${defaultBranchName}' and commits all .github/ files`
+          },
+          {
+            value: "write-only",
+            label: "💾 Write files directly without Git branch or commit",
+            hint: "Writes .github/ files directly to working tree"
+          },
+          {
+            value: "preview",
+            label: "👁️  Preview only",
+            hint: "Exit without writing or committing"
+          }
+        ];
+
+        if (isRemote) {
+          deliveryOptions = [
             {
-              value: "branch-commit",
-              label: `🌿 Create Git Branch & Commit Changes ${pc.green("(Recommended)")}`,
-              hint: `Creates branch '${defaultBranchName}' and commits all .github/ files`
-            },
-            {
-              value: "write-only",
-              label: "💾 Write files directly without Git branch or commit",
-              hint: "Writes .github/ files directly to current working tree"
+              value: "save-local",
+              label: `💾 Save generated workflows to local folder ${pc.green("(Recommended)")}`,
+              hint: `Saves all .github/ configuration files to ${defaultSaveDir}`
             },
             {
               value: "preview",
               label: "👁️  Preview only",
-              hint: "Exit without writing or committing"
+              hint: "Exit without writing files"
             }
-          ],
-          initialValue: "branch-commit"
+          ];
+        }
+
+        const deliveryAction = await select({
+          message: "How would you like to apply these configurations?",
+          options: deliveryOptions,
+          initialValue: isRemote ? "save-local" : "branch-commit"
         });
 
         if (isCancel(deliveryAction) || deliveryAction === "preview") {
@@ -323,7 +354,38 @@ export async function runInteractiveWizardV2(): Promise<void> {
           return;
         }
 
-        // Option A: Write files directly
+        // Option: Remote repository local saving
+        if (deliveryAction === "save-local") {
+          const saveDirInput = await text({
+            message: "Enter directory to save configuration files:",
+            placeholder: defaultSaveDir,
+            defaultValue: defaultSaveDir,
+            validate: (val) => (!val || val.trim() === "" ? "Please enter a valid directory path." : undefined)
+          });
+
+          if (isCancel(saveDirInput)) {
+            cancel("Operation cancelled.");
+            process.exit(0);
+          }
+
+          const baseDir = path.resolve(process.cwd(), String(saveDirInput).trim());
+          for (const file of generatedFiles) {
+            const fullPath = path.resolve(baseDir, file.relativePath);
+            await fs.mkdir(path.dirname(fullPath), { recursive: true });
+            await fs.writeFile(fullPath, file.content, "utf8");
+          }
+
+          outro(
+            pc.green(
+              `✨ Successfully saved all CI/CD and Security files to ${pc.bold(baseDir)}!\n\n` +
+              `   Files generated:\n` +
+              generatedFiles.map(f => `   ✓ ${f.relativePath}`).join("\n")
+            )
+          );
+          return;
+        }
+
+        // Option: Write files directly
         if (deliveryAction === "write-only") {
           for (const file of generatedFiles) {
             const fullPath = path.resolve(scanPath, file.relativePath);
@@ -341,80 +403,105 @@ export async function runInteractiveWizardV2(): Promise<void> {
           return;
         }
 
-        // Option B: Git Branch & Commit
-        const branchInput = await text({
-          message: "Enter the Git branch name to create:",
-          placeholder: defaultBranchName,
-          defaultValue: defaultBranchName,
-          validate: (val) => (!val || val.trim() === "" ? "Branch name cannot be empty." : undefined)
-        });
-
-        if (isCancel(branchInput)) {
-          cancel("Operation cancelled.");
-          process.exit(0);
-        }
-
-        const branchName = String(branchInput).trim();
-        s.start(pc.cyan(`Creating branch '${branchName}' and committing files...`));
-
-        // Create branch & write files
-        execSync(`git checkout -b "${branchName}"`, { cwd: scanPath, stdio: "pipe" });
-
-        for (const file of generatedFiles) {
-          const fullPath = path.resolve(scanPath, file.relativePath);
-          await fs.mkdir(path.dirname(fullPath), { recursive: true });
-          await fs.writeFile(fullPath, file.content, "utf8");
-        }
-
-        execSync(`git add .github/`, { cwd: scanPath, stdio: "pipe" });
-        execSync(
-          `git commit -m "ci: add zero-config CI/CD pipeline and security automation"`,
-          { cwd: scanPath, stdio: "pipe" }
-        );
-
-        s.stop(pc.green(`✅ Created branch ${pc.bold(branchName)} and committed files!`));
-
-        // Push branch?
-        const shouldPush = await confirm({
-          message: `Push branch '${branchName}' to remote origin and generate 1-click Pull Request link?`,
-          initialValue: true
-        });
-
-        if (!isCancel(shouldPush) && shouldPush) {
-          s.start(pc.cyan(`Pushing branch '${branchName}' to origin...`));
-          try {
-            execSync(`git push -u origin "${branchName}"`, { cwd: scanPath, stdio: "pipe" });
-            s.stop(pc.green("✅ Successfully pushed to origin!"));
-
-            const repoInfo = getRemoteRepoInfo(scanPath, target);
-            const prUrl = repoInfo
-              ? `https://github.com/${repoInfo.owner}/${repoInfo.repo}/pull/new/${branchName}`
-              : undefined;
-
-            outro(
-              pc.green(
-                `🎉 Successfully pushed branch ${pc.bold(pc.cyan(branchName))} to GitHub!\n\n` +
-                (prUrl
-                  ? `   🔗 ${pc.bold("1-Click Pull Request Creation Link:")}\n      ${pc.underline(pc.bold(prUrl))}\n\n`
-                  : "") +
-                `   Files committed:\n` +
-                generatedFiles.map(f => `   ✓ ${f.relativePath}`).join("\n")
-              )
-            );
-            return;
-          } catch (pushErr: any) {
-            s.stop(pc.yellow("⚠️  Could not push branch to remote origin."));
-            log.warn(pushErr?.message || String(pushErr));
+        // Option: Git Branch & Commit
+        if (deliveryAction === "branch-commit") {
+          if (!isGitRepo(scanPath)) {
+            log.warn(pc.yellow("⚠️  Target directory is not a Git repository. Initializing new git repository..."));
+            try {
+              execSync("git init", { cwd: scanPath, stdio: "ignore" });
+            } catch {
+              // Fallback to write-only
+              for (const file of generatedFiles) {
+                const fullPath = path.resolve(scanPath, file.relativePath);
+                await fs.mkdir(path.dirname(fullPath), { recursive: true });
+                await fs.writeFile(fullPath, file.content, "utf8");
+              }
+              outro(pc.green(`✨ Wrote files directly to ${pc.bold(scanPath)}`));
+              return;
+            }
           }
-        }
 
-        outro(
-          pc.green(
-            `✨ Branch ${pc.bold(branchName)} is ready locally!\n\n` +
-            `   To publish to GitHub when ready, run:\n` +
-            `   git push -u origin ${branchName}`
-          )
-        );
+          const branchInput = await text({
+            message: "Enter the Git branch name to create:",
+            placeholder: defaultBranchName,
+            defaultValue: defaultBranchName,
+            validate: (val) => (!val || val.trim() === "" ? "Branch name cannot be empty." : undefined)
+          });
+
+          if (isCancel(branchInput)) {
+            cancel("Operation cancelled.");
+            process.exit(0);
+          }
+
+          const branchName = String(branchInput).trim();
+          s.start(pc.cyan(`Creating branch '${branchName}' and committing files...`));
+
+          // Create branch & write files
+          try {
+            execSync(`git checkout -b "${branchName}"`, { cwd: scanPath, stdio: "pipe" });
+          } catch {
+            // Might already be on that branch or initial commit needed
+          }
+
+          for (const file of generatedFiles) {
+            const fullPath = path.resolve(scanPath, file.relativePath);
+            await fs.mkdir(path.dirname(fullPath), { recursive: true });
+            await fs.writeFile(fullPath, file.content, "utf8");
+          }
+
+          try {
+            execSync(`git add .github/`, { cwd: scanPath, stdio: "pipe" });
+            execSync(
+              `git commit -m "ci: add zero-config CI/CD pipeline and security automation"`,
+              { cwd: scanPath, stdio: "pipe" }
+            );
+            s.stop(pc.green(`✅ Created branch ${pc.bold(branchName)} and committed files!`));
+          } catch (commitErr) {
+            s.stop(pc.yellow("⚠️  Files written, but git commit was skipped or already clean."));
+          }
+
+          // Push branch?
+          const shouldPush = await confirm({
+            message: `Push branch '${branchName}' to remote origin and generate 1-click Pull Request link?`,
+            initialValue: true
+          });
+
+          if (!isCancel(shouldPush) && shouldPush) {
+            s.start(pc.cyan(`Pushing branch '${branchName}' to origin...`));
+            try {
+              execSync(`git push -u origin "${branchName}"`, { cwd: scanPath, stdio: "pipe" });
+              s.stop(pc.green("✅ Successfully pushed to origin!"));
+
+              const repoInfo = getRemoteRepoInfo(scanPath, target);
+              const prUrl = repoInfo
+                ? `https://github.com/${repoInfo.owner}/${repoInfo.repo}/pull/new/${branchName}`
+                : undefined;
+
+              outro(
+                pc.green(
+                  `🎉 Successfully pushed branch ${pc.bold(pc.cyan(branchName))} to GitHub!\n\n` +
+                  (prUrl
+                    ? `   🔗 ${pc.bold("1-Click Pull Request Creation Link:")}\n      ${pc.underline(pc.bold(prUrl))}\n\n`
+                    : "") +
+                  `   Files committed:\n` +
+                  generatedFiles.map(f => `   ✓ ${f.relativePath}`).join("\n")
+                )
+              );
+              return;
+            } catch (pushErr: any) {
+              s.stop(pc.yellow("⚠️  Could not push branch to remote origin."));
+              log.warn(pushErr?.message || String(pushErr));
+            }
+          }
+
+          outro(
+            pc.green(
+              `✨ Branch ${pc.bold(branchName)} is ready locally!\n\n` +
+              `   To publish to GitHub when ready, run:\n` +
+              `   git push -u origin ${branchName}`
+            )
+          );
+        }
       },
       (msg) => {
         s.message(pc.cyan(msg));
