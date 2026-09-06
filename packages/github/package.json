@@ -1,5 +1,5 @@
-{
-  "name": "@zcicd/github",
+﻿{
+  "name": "@auto-gha/github",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@zcicd/security": "workspace:*",
-    "@zcicd/state": "workspace:*",
-    "@zcicd/workflow-ir": "workspace:*"
+    "@auto-gha/security": "workspace:*",
+    "@auto-gha/state": "workspace:*",
+    "@auto-gha/workflow-ir": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -20,3 +20,4 @@
     "vitest": "^3.0.0"
   }
 }
+

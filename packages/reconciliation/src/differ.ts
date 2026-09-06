@@ -1,5 +1,5 @@
-import { parse } from "yaml";
-import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@zcicd/workflow-ir";
+﻿import { parse } from "yaml";
+import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@auto-gha/workflow-ir";
 import type { ReconciliationPlan, JobDiff, StepDiff, ReconciliationStatus } from "./types.js";
 
 function parseExistingWorkflow(yamlContent: string): { name?: string; jobs: Record<string, any> } | null {
@@ -179,3 +179,4 @@ export function reconcileWorkflows(
     customStepsPreserved: customStepsPreservedCount
   };
 }
+

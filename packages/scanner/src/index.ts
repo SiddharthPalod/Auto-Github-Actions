@@ -1,4 +1,4 @@
-import type { ProjectState } from "@zcicd/state";
+import type { ProjectState } from "@auto-gha/state";
 import { createRepositoryContext } from "./context.js";
 
 import { nodeDetector } from "./detectors/node.js";

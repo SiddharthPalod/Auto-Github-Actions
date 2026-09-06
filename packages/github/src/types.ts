@@ -1,6 +1,6 @@
-import type { ProjectState } from "@zcicd/state";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
-import type { GeneratedSecurityArtifacts } from "@zcicd/security";
+﻿import type { ProjectState } from "@auto-gha/state";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
+import type { GeneratedSecurityArtifacts } from "@auto-gha/security";
 
 export type GitHubAuthStatus = {
   isAuthenticated: boolean;
@@ -26,3 +26,4 @@ export type PullRequestResult = {
   branchName?: string;
   error?: string;
 };
+

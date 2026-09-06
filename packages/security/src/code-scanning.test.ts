@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import type { ProjectState } from "@zcicd/state";
+﻿import { describe, it, expect } from "vitest";
+import type { ProjectState } from "@auto-gha/state";
 import { compileSecurityPolicy, resolveSecurityPolicy } from "./index.js";
 
 describe("Phase 6B - Universal Code Scanning Catalog", () => {
@@ -62,3 +62,4 @@ describe("Phase 6B - Universal Code Scanning Catalog", () => {
     expect(artifacts.codeScanningYaml).toContain("step-security/harden-runner@v2");
   });
 });
+

@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+﻿import { describe, it, expect } from "vitest";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
 import { reconcileWorkflows } from "./index.js";
 
 describe("Phase 7 - Workflow Reconciliation Engine", () => {
@@ -79,3 +79,4 @@ jobs:
     expect(mergedSteps.some(s => s.kind === "uses" && s.uses.includes("setup-node"))).toBe(true);
   });
 });
+

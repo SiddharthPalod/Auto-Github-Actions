@@ -1,5 +1,5 @@
-import type { CompilerPass, CompilerContext } from "./types.js";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+﻿import type { CompilerPass, CompilerContext } from "./types.js";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
 
 export const matrixTestingPass: CompilerPass = {
   name: "matrix-testing",
@@ -63,3 +63,4 @@ export const matrixTestingPass: CompilerPass = {
     };
   }
 };
+

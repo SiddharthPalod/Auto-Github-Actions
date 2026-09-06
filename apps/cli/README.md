@@ -112,16 +112,16 @@ Repository / Remote Git URL
 
 | Package | Role | Description |
 | :--- | :--- | :--- |
-| **`@zcicd/state`** | Data Contracts | Pure TypeScript interfaces representing discovered project facts, infrastructure markers, and evidence. |
-| **`@zcicd/scanner`** | Phase 1 Engine | High-performance filesystem crawler and deterministic detectors for Node, Python, Go, Rust, Docker, Java, AWS, GCP, Azure, K8s, Terraform, etc. |
-| **`@zcicd/planner`** | Phase 2 Engine | Capability vocabulary normalizer and declarative rule evaluation engine for CI and CD. |
-| **`@zcicd/resolver`** | Phase 3 Engine | Knowledge catalog containing normalized GitHub Starter Workflows with provenance tracking. |
-| **`@zcicd/workflow-ir`** | Phase 4 AST | Strongly-typed Workflow Intermediate Representation (Jobs, DAG `needs`, Environments, Conditions, Steps). |
-| **`@zcicd/compiler`** | Phase 4/5 Compiler | Workflow Builder, DAG Cycle Validator, and deterministic YAML emitter with optimization passes. |
-| **`@zcicd/security`** | Phase 6 Engine | Security Policy IR & Multi-artifact Security Compiler (Dependabot, CodeQL, Code Scanning, Trivy, Audits). |
-| **`@zcicd/reconciliation`** | Phase 7 Engine | Semantic AST diffing & non-destructive merging with existing `.github/workflows`. |
-| **`@zcicd/github`** | Phase 7 Automation | Native Git branch management and GitHub Pull Request automation. |
-| **`@zcicd/cli`** | Developer CLI | Terminal runner with interactive live progress (Wizard v2), minimalist mode (v1), and `--inspect`. |
+| **`@auto-gha/state`** | Data Contracts | Pure TypeScript interfaces representing discovered project facts, infrastructure markers, and evidence. |
+| **`@auto-gha/scanner`** | Phase 1 Engine | High-performance filesystem crawler and deterministic detectors for Node, Python, Go, Rust, Docker, Java, AWS, GCP, Azure, K8s, Terraform, etc. |
+| **`@auto-gha/planner`** | Phase 2 Engine | Capability vocabulary normalizer and declarative rule evaluation engine for CI and CD. |
+| **`@auto-gha/resolver`** | Phase 3 Engine | Knowledge catalog containing normalized GitHub Starter Workflows with provenance tracking. |
+| **`@auto-gha/workflow-ir`** | Phase 4 AST | Strongly-typed Workflow Intermediate Representation (Jobs, DAG `needs`, Environments, Conditions, Steps). |
+| **`@auto-gha/compiler`** | Phase 4/5 Compiler | Workflow Builder, DAG Cycle Validator, and deterministic YAML emitter with optimization passes. |
+| **`@auto-gha/security`** | Phase 6 Engine | Security Policy IR & Multi-artifact Security Compiler (Dependabot, CodeQL, Code Scanning, Trivy, Audits). |
+| **`@auto-gha/reconciliation`** | Phase 7 Engine | Semantic AST diffing & non-destructive merging with existing `.github/workflows`. |
+| **`@auto-gha/github`** | Phase 7 Automation | Native Git branch management and GitHub Pull Request automation. |
+| **`@auto-gha/cli`** | Developer CLI | Terminal runner with interactive live progress (Wizard v2), minimalist mode (v1), and `--inspect`. |
 
 ---
 
@@ -130,15 +130,15 @@ Repository / Remote Git URL
 ### 1. Interactive CLI Wizard
 Run the interactive wizard (defaults to Wizard v2 with live multi-phase visual feedback):
 ```bash
-pnpm --filter @zcicd/cli dev          # Wizard v2 (Live compiler pipeline + Unified Git Delivery)
-pnpm --filter @zcicd/cli dev --v1     # Wizard v1 (Minimalist fast flow)
+pnpm --filter @auto-gha/cli dev          # Wizard v2 (Live compiler pipeline + Unified Git Delivery)
+pnpm --filter @auto-gha/cli dev --v1     # Wizard v1 (Minimalist fast flow)
 ```
 
 ### 2. Non-Interactive Inspection & Scripting
 Print the AST, DAG structure, and compiled YAML to stdout:
 ```bash
-pnpm --filter @zcicd/cli dev --inspect "../path-to-project"
-pnpm --filter @zcicd/cli dev --inspect "https://github.com/expressjs/express"
+pnpm --filter @auto-gha/cli dev --inspect "../path-to-project"
+pnpm --filter @auto-gha/cli dev --inspect "https://github.com/expressjs/express"
 ```
 
 ### 3. Build & Test Monorepo
@@ -242,19 +242,19 @@ Below is the **Universal 5-Layer Integration Protocol** to connect any workflow 
 ### The Universal 5-Layer Integration Protocol
 
 ```text
-1. State Layer       Define new runtime/framework/infrastructure types & evidence models in @zcicd/state
+1. State Layer       Define new runtime/framework/infrastructure types & evidence models in @auto-gha/state
         │
         ▼
-2. Scanner Layer     Implement filesystem detectors in @zcicd/scanner to discover manifests & file markers
+2. Scanner Layer     Implement filesystem detectors in @auto-gha/scanner to discover manifests & file markers
         │
         ▼
-3. Planner Layer     Declare capability IDs and policy rules in @zcicd/planner to deduce actions from facts
+3. Planner Layer     Declare capability IDs and policy rules in @auto-gha/planner to deduce actions from facts
         │
         ▼
-4. Resolver Layer    Ingest template into catalog in @zcicd/resolver and map actions to concrete steps
+4. Resolver Layer    Ingest template into catalog in @auto-gha/resolver and map actions to concrete steps
         │
         ▼
-5. Compiler Layer    Partition primitives into parallel DAG jobs, inject caching/hardening in @zcicd/compiler
+5. Compiler Layer    Partition primitives into parallel DAG jobs, inject caching/hardening in @auto-gha/compiler
 ```
 
 ---
@@ -262,11 +262,11 @@ Below is the **Universal 5-Layer Integration Protocol** to connect any workflow 
 ## 📋 Integration Checklist for New Tools
 
 Before opening a PR adding a new workflow tool, verify:
-- [ ] **State Types:** Added runtime/tooling name in `@zcicd/state`.
-- [ ] **Filesystem Detector:** Deterministic crawl without false positives (handles root & subdirectories) in `@zcicd/scanner`.
-- [ ] **Capability & Rule:** Declarative capability mapping with provenance evidence in `@zcicd/planner`.
-- [ ] **Catalog Step:** Exact action source URLs and versions in `@zcicd/resolver`.
-- [ ] **DAG Routing:** Independent parallel job with proper `runs-on`, `timeout-minutes`, `needs`, and `permissions` in `@zcicd/compiler`.
+- [ ] **State Types:** Added runtime/tooling name in `@auto-gha/state`.
+- [ ] **Filesystem Detector:** Deterministic crawl without false positives (handles root & subdirectories) in `@auto-gha/scanner`.
+- [ ] **Capability & Rule:** Declarative capability mapping with provenance evidence in `@auto-gha/planner`.
+- [ ] **Catalog Step:** Exact action source URLs and versions in `@auto-gha/resolver`.
+- [ ] **DAG Routing:** Independent parallel job with proper `runs-on`, `timeout-minutes`, `needs`, and `permissions` in `@auto-gha/compiler`.
 - [ ] **Optimization Passes:** Caching keys (`cache-dependency-path`) and production hardening configured.
 - [ ] **Unit Tests:** Added detector, planner, and compiler test cases with 100% green coverage (`pnpm -r test`).
 

@@ -1,6 +1,6 @@
-import type {
+﻿import type {
   PlannedAction
-} from "@zcicd/planner";
+} from "@auto-gha/planner";
 
 export type ResolvedPrimitive =
   | ResolvedUsesPrimitive

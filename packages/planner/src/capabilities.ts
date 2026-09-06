@@ -1,6 +1,6 @@
-import type {
+﻿import type {
   ProjectState
-} from "@zcicd/state";
+} from "@auto-gha/state";
 
 import type {
   CapabilityId,

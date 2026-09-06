@@ -1,4 +1,4 @@
-import type { ProjectState } from "@zcicd/state";
+﻿import type { ProjectState } from "@auto-gha/state";
 import type { SecurityLevel, GeneratedSecurityArtifacts } from "./types.js";
 import { resolveSecurityPolicy } from "./resolver.js";
 import { compileDependabotYAML } from "./compilers/dependabot.js";
@@ -36,3 +36,4 @@ export function compileSecurityPolicy(
     codeScanningYaml: codeScanningYaml || undefined
   };
 }
+

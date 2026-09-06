@@ -2,11 +2,11 @@ import { intro, outro, text, multiselect, select, confirm, spinner, note, isCanc
 import pc from "picocolors";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { scanRepository } from "@zcicd/scanner";
-import { planWorkflow } from "@zcicd/planner";
-import { resolvePlan } from "@zcicd/resolver";
-import { buildWorkflowIR, compileWorkflowYAML } from "@zcicd/compiler";
-import { compileSecurityPolicy, type SecurityLevel } from "@zcicd/security";
+import { scanRepository } from "@auto-gha/scanner";
+import { planWorkflow } from "@auto-gha/planner";
+import { resolvePlan } from "@auto-gha/resolver";
+import { buildWorkflowIR, compileWorkflowYAML } from "@auto-gha/compiler";
+import { compileSecurityPolicy, type SecurityLevel } from "@auto-gha/security";
 import { withRepository, isRemoteUrl } from "./git.js";
 
 /**

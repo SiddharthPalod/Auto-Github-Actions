@@ -1,5 +1,5 @@
-{
-  "name": "@zcicd/compiler",
+﻿{
+  "name": "@auto-gha/compiler",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@zcicd/planner": "workspace:*",
-    "@zcicd/resolver": "workspace:*",
-    "@zcicd/state": "workspace:*",
-    "@zcicd/workflow-ir": "workspace:*",
+    "@auto-gha/planner": "workspace:*",
+    "@auto-gha/resolver": "workspace:*",
+    "@auto-gha/state": "workspace:*",
+    "@auto-gha/workflow-ir": "workspace:*",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
@@ -22,3 +22,4 @@
     "vitest": "^3.0.0"
   }
 }
+

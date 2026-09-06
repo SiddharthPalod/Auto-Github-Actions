@@ -8,15 +8,15 @@ export default defineConfig({
   minify: true,
   bundle: true,
   noExternal: [
-    "@zcicd/compiler",
-    "@zcicd/github",
-    "@zcicd/planner",
-    "@zcicd/reconciliation",
-    "@zcicd/resolver",
-    "@zcicd/scanner",
-    "@zcicd/security",
-    "@zcicd/state",
-    "@zcicd/workflow-ir"
+    "@auto-gha/compiler",
+    "@auto-gha/github",
+    "@auto-gha/planner",
+    "@auto-gha/reconciliation",
+    "@auto-gha/resolver",
+    "@auto-gha/scanner",
+    "@auto-gha/security",
+    "@auto-gha/state",
+    "@auto-gha/workflow-ir"
   ],
   outDir: "dist"
 });

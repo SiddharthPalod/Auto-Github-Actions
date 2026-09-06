@@ -1,5 +1,5 @@
-{
-  "name": "@zcicd/security",
+﻿{
+  "name": "@auto-gha/security",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@zcicd/compiler": "workspace:*",
-    "@zcicd/state": "workspace:*",
-    "@zcicd/workflow-ir": "workspace:*",
+    "@auto-gha/compiler": "workspace:*",
+    "@auto-gha/state": "workspace:*",
+    "@auto-gha/workflow-ir": "workspace:*",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
@@ -21,3 +21,4 @@
     "vitest": "^3.0.0"
   }
 }
+

@@ -1,5 +1,5 @@
-import { stringify } from "yaml";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+﻿import { stringify } from "yaml";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
 import { validateWorkflowIR } from "./validator.js";
 import { runOptimizationPasses, type CompilerContext } from "./passes/index.js";
 
@@ -107,3 +107,4 @@ export function compileWorkflowYAML(
   const header = buildHeaderComment(optimizedIR, context);
   return `${header}\n${yamlBody}`;
 }
+

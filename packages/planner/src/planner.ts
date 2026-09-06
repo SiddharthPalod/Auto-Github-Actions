@@ -1,4 +1,4 @@
-import type { ProjectState } from "@zcicd/state";
+﻿import type { ProjectState } from "@auto-gha/state";
 import type { Rule, WorkflowPlan, PlannedAction } from "./types.js";
 import { resolveCapabilities } from "./capabilities.js";
 import { goBuildRule } from "./rules/go.js";

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { scanRepository } from "@zcicd/scanner";
-import { planWorkflow } from "@zcicd/planner";
-import { resolvePlan } from "@zcicd/resolver";
-import { buildWorkflowIR, compileWorkflowYAML } from "@zcicd/compiler";
-import { compileSecurityPolicy } from "@zcicd/security";
+import { scanRepository } from "@auto-gha/scanner";
+import { planWorkflow } from "@auto-gha/planner";
+import { resolvePlan } from "@auto-gha/resolver";
+import { buildWorkflowIR, compileWorkflowYAML } from "@auto-gha/compiler";
+import { compileSecurityPolicy } from "@auto-gha/security";
 import { withRepository } from "./git.js";
 import { printScanResults } from "./formatter.js";
 import { runInteractiveWizard as runWizardV1 } from "./wizard.js";

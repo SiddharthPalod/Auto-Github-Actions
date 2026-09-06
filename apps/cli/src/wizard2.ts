@@ -3,12 +3,12 @@ import pc from "picocolors";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { scanRepository } from "@zcicd/scanner";
-import { planWorkflow } from "@zcicd/planner";
-import { resolvePlan } from "@zcicd/resolver";
-import { buildWorkflowIR, compileWorkflowYAML, validateWorkflowIR } from "@zcicd/compiler";
-import { compileSecurityPolicy, type SecurityLevel } from "@zcicd/security";
-import { reconcileWorkflows } from "@zcicd/reconciliation";
+import { scanRepository } from "@auto-gha/scanner";
+import { planWorkflow } from "@auto-gha/planner";
+import { resolvePlan } from "@auto-gha/resolver";
+import { buildWorkflowIR, compileWorkflowYAML, validateWorkflowIR } from "@auto-gha/compiler";
+import { compileSecurityPolicy, type SecurityLevel } from "@auto-gha/security";
+import { reconcileWorkflows } from "@auto-gha/reconciliation";
 import { withRepository, isRemoteUrl } from "./git.js";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

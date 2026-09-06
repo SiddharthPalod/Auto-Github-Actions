@@ -5,6 +5,6 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "dev": "pnpm --filter @zcicd/cli dev"
+    "dev": "pnpm --filter @auto-gha/cli dev"
   }
 }

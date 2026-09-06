@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { buildWorkflowIR } from "./builder.js";
 import { validateWorkflowIR } from "./validator.js";
 import { compileWorkflowYAML } from "./compiler.js";
-import type { WorkflowPlan } from "@zcicd/planner";
-import type { ResolvedWorkflowPlan } from "@zcicd/resolver";
-import type { ProjectState } from "@zcicd/state";
+import type { WorkflowPlan } from "@auto-gha/planner";
+import type { ResolvedWorkflowPlan } from "@auto-gha/resolver";
+import type { ProjectState } from "@auto-gha/state";
 
 describe("Phase 5 - CI Compiler Engine & Optimization Passes", () => {
   it("compiles fully optimized YAML with dependency caching, job timeouts, and concurrency cancellation", () => {
@@ -130,3 +130,4 @@ describe("Phase 5 - CI Compiler Engine & Optimization Passes", () => {
     expect(validation.errors[0].message).toContain("Circular dependency");
   });
 });
+

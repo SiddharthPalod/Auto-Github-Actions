@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { planWorkflow } from "./planner.js";
 import { resolveCapabilities } from "./capabilities.js";
-import type { ProjectState } from "@zcicd/state";
+import type { ProjectState } from "@auto-gha/state";
 
 describe("Planner - Capabilities & Rule Engine", () => {
   it("resolves capabilities and plans workflow for a Node + TypeScript + Vitest project", () => {
@@ -47,3 +47,4 @@ describe("Planner - Capabilities & Rule Engine", () => {
     expect(actionTypes).toContain("docker.build");
   });
 });
+

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import type { ProjectState } from "@zcicd/state";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
-import type { GeneratedSecurityArtifacts } from "@zcicd/security";
+﻿import { describe, it, expect } from "vitest";
+import type { ProjectState } from "@auto-gha/state";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
+import type { GeneratedSecurityArtifacts } from "@auto-gha/security";
 import { generatePullRequestBody } from "./index.js";
 
 describe("Phase 7 - GitHub PR Automation", () => {
@@ -58,7 +58,7 @@ describe("Phase 7 - GitHub PR Automation", () => {
       ]
     });
 
-    expect(body).toContain("## 🚀 Zero-Config CI/CD & Security Automation");
+    expect(body).toContain("## ðŸš€ Zero-Config CI/CD & Security Automation");
     expect(body).toContain("`rust`");
     expect(body).toContain("`cargo`");
     expect(body).toContain("**Rust CI**");
@@ -67,3 +67,4 @@ describe("Phase 7 - GitHub PR Automation", () => {
     expect(body).toContain("`.github/workflows/ci.yml`");
   });
 });
+

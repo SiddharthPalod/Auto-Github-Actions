@@ -1,9 +1,9 @@
-export * from "./types.js";
+﻿export * from "./types.js";
 export * from "./caching.js";
 export * from "./hardening.js";
 export * from "./matrix.js";
 
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
 import type { CompilerContext, CompilerPass } from "./types.js";
 import { dependencyCachingPass } from "./caching.js";
 import { productionHardeningPass } from "./hardening.js";
@@ -26,3 +26,4 @@ export function runOptimizationPasses(
   }
   return currentIR;
 }
+

@@ -1,5 +1,5 @@
-import type { CompilerPass, CompilerContext } from "./types.js";
-import type { WorkflowIR, WorkflowStep } from "@zcicd/workflow-ir";
+﻿import type { CompilerPass, CompilerContext } from "./types.js";
+import type { WorkflowIR, WorkflowStep } from "@auto-gha/workflow-ir";
 
 export const dependencyCachingPass: CompilerPass = {
   name: "dependency-caching",
@@ -112,3 +112,4 @@ export const dependencyCachingPass: CompilerPass = {
     };
   }
 };
+

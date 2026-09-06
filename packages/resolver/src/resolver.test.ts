@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { resolvePlan, resolveAction } from "./resolver.js";
 import { STARTER_WORKFLOWS_CATALOG } from "./catalog/starter-workflows.js";
-import type { WorkflowPlan } from "@zcicd/planner";
+import type { WorkflowPlan } from "@auto-gha/planner";
 
 describe("Phase 3B - Starter Workflow Knowledge Ingestion & Resolver", () => {
   it("contains normalized starter workflows in catalog", () => {
@@ -83,3 +83,4 @@ describe("Phase 3B - Starter Workflow Knowledge Ingestion & Resolver", () => {
     expect(dockerResult.resolved[0].source).toBe("actions/starter-workflows:ci/docker-image.yml");
   });
 });
+

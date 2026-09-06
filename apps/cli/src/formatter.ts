@@ -1,8 +1,8 @@
-import type { ProjectState } from "@zcicd/state";
-import type { WorkflowPlan } from "@zcicd/planner";
-import type { ResolvedWorkflowPlan } from "@zcicd/resolver";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
-import type { GeneratedSecurityArtifacts } from "@zcicd/security";
+import type { ProjectState } from "@auto-gha/state";
+import type { WorkflowPlan } from "@auto-gha/planner";
+import type { ResolvedWorkflowPlan } from "@auto-gha/resolver";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
+import type { GeneratedSecurityArtifacts } from "@auto-gha/security";
 
 export function printScanResults(
   target: string,

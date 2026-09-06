@@ -1,4 +1,4 @@
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+﻿import type { WorkflowIR } from "@auto-gha/workflow-ir";
 
 export type ValidationError = {
   path: string;
@@ -89,3 +89,4 @@ export function validateWorkflowIR(ir: WorkflowIR): ValidationResult {
     errors
   };
 }
+

@@ -1,6 +1,6 @@
-import type { WorkflowPlan } from "@zcicd/planner";
-import type { ResolvedWorkflowPlan, ResolvedPrimitive } from "@zcicd/resolver";
-import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@zcicd/workflow-ir";
+﻿import type { WorkflowPlan } from "@auto-gha/planner";
+import type { ResolvedWorkflowPlan, ResolvedPrimitive } from "@auto-gha/resolver";
+import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@auto-gha/workflow-ir";
 
 export type BuilderOptions = {
   workflowName?: string;
@@ -436,3 +436,4 @@ export function buildWorkflowIR(
     jobs
   };
 }
+

@@ -1,4 +1,4 @@
-import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@zcicd/workflow-ir";
+﻿import type { WorkflowIR, WorkflowJob, WorkflowStep } from "@auto-gha/workflow-ir";
 
 export type ReconciliationStatus = "create" | "identical" | "upgrade" | "conflict";
 
@@ -26,3 +26,4 @@ export type ReconciliationPlan = {
   mergedIR: WorkflowIR;
   customStepsPreserved: number;
 };
+

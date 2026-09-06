@@ -1,5 +1,5 @@
 import type { Detector, RepositoryContext } from "../detector.js";
-import type { ProjectState } from "@zcicd/state";
+import type { ProjectState } from "@auto-gha/state";
 
 const COMPOSE_REGEX = /(^|\/)(docker-)?compose\.(yml|yaml)$/i;
 

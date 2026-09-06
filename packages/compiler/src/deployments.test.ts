@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import type { ProjectState } from "@zcicd/state";
-import { planWorkflow } from "@zcicd/planner";
-import { resolvePlan } from "@zcicd/resolver";
+﻿import { describe, it, expect } from "vitest";
+import type { ProjectState } from "@auto-gha/state";
+import { planWorkflow } from "@auto-gha/planner";
+import { resolvePlan } from "@auto-gha/resolver";
 import { buildWorkflowIR, validateWorkflowIR, compileWorkflowYAML } from "./index.js";
 
 describe("Phase 8 - Continuous Deployment & Cloud Targets", () => {
@@ -100,3 +100,4 @@ describe("Phase 8 - Continuous Deployment & Cloud Targets", () => {
     expect(yaml).toContain("terraform apply -auto-approve");
   });
 });
+

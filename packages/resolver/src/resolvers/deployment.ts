@@ -1,4 +1,4 @@
-import type { PlannedAction } from "@zcicd/planner";
+﻿import type { PlannedAction } from "@auto-gha/planner";
 import type { ResolvedPrimitive } from "../types.js";
 import type { WorkflowStepPattern } from "../catalog/types.js";
 import { STARTER_WORKFLOWS_CATALOG } from "../catalog/index.js";
@@ -116,3 +116,4 @@ provenance: {
     };
   }) as ResolvedPrimitive[];
 }
+

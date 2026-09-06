@@ -17,36 +17,36 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
     devDependencies:
+      '@auto-gha/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
+      '@auto-gha/github':
+        specifier: workspace:*
+        version: link:../../packages/github
+      '@auto-gha/planner':
+        specifier: workspace:*
+        version: link:../../packages/planner
+      '@auto-gha/reconciliation':
+        specifier: workspace:*
+        version: link:../../packages/reconciliation
+      '@auto-gha/resolver':
+        specifier: workspace:*
+        version: link:../../packages/resolver
+      '@auto-gha/scanner':
+        specifier: workspace:*
+        version: link:../../packages/scanner
+      '@auto-gha/security':
+        specifier: workspace:*
+        version: link:../../packages/security
+      '@auto-gha/state':
+        specifier: workspace:*
+        version: link:../../packages/state
+      '@auto-gha/workflow-ir':
+        specifier: workspace:*
+        version: link:../../packages/workflow-ir
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
-      '@zcicd/compiler':
-        specifier: workspace:*
-        version: link:../../packages/compiler
-      '@zcicd/github':
-        specifier: workspace:*
-        version: link:../../packages/github
-      '@zcicd/planner':
-        specifier: workspace:*
-        version: link:../../packages/planner
-      '@zcicd/reconciliation':
-        specifier: workspace:*
-        version: link:../../packages/reconciliation
-      '@zcicd/resolver':
-        specifier: workspace:*
-        version: link:../../packages/resolver
-      '@zcicd/scanner':
-        specifier: workspace:*
-        version: link:../../packages/scanner
-      '@zcicd/security':
-        specifier: workspace:*
-        version: link:../../packages/security
-      '@zcicd/state':
-        specifier: workspace:*
-        version: link:../../packages/state
-      '@zcicd/workflow-ir':
-        specifier: workspace:*
-        version: link:../../packages/workflow-ir
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.26)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0)
@@ -62,16 +62,16 @@ importers:
 
   packages/compiler:
     dependencies:
-      '@zcicd/planner':
+      '@auto-gha/planner':
         specifier: workspace:*
         version: link:../planner
-      '@zcicd/resolver':
+      '@auto-gha/resolver':
         specifier: workspace:*
         version: link:../resolver
-      '@zcicd/state':
+      '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
-      '@zcicd/workflow-ir':
+      '@auto-gha/workflow-ir':
         specifier: workspace:*
         version: link:../workflow-ir
       yaml:
@@ -90,13 +90,13 @@ importers:
 
   packages/github:
     dependencies:
-      '@zcicd/security':
+      '@auto-gha/security':
         specifier: workspace:*
         version: link:../security
-      '@zcicd/state':
+      '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
-      '@zcicd/workflow-ir':
+      '@auto-gha/workflow-ir':
         specifier: workspace:*
         version: link:../workflow-ir
     devDependencies:
@@ -112,7 +112,7 @@ importers:
 
   packages/planner:
     dependencies:
-      '@zcicd/state':
+      '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
     devDependencies:
@@ -128,10 +128,10 @@ importers:
 
   packages/reconciliation:
     dependencies:
-      '@zcicd/compiler':
+      '@auto-gha/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@zcicd/workflow-ir':
+      '@auto-gha/workflow-ir':
         specifier: workspace:*
         version: link:../workflow-ir
       yaml:
@@ -150,7 +150,7 @@ importers:
 
   packages/resolver:
     dependencies:
-      '@zcicd/planner':
+      '@auto-gha/planner':
         specifier: workspace:*
         version: link:../planner
     devDependencies:
@@ -166,7 +166,7 @@ importers:
 
   packages/scanner:
     dependencies:
-      '@zcicd/state':
+      '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
     devDependencies:
@@ -182,13 +182,13 @@ importers:
 
   packages/security:
     dependencies:
-      '@zcicd/compiler':
+      '@auto-gha/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@zcicd/state':
+      '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
-      '@zcicd/workflow-ir':
+      '@auto-gha/workflow-ir':
         specifier: workspace:*
         version: link:../workflow-ir
       yaml:

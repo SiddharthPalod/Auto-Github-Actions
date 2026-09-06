@@ -1,5 +1,5 @@
-{
-  "name": "@zcicd/resolver",
+﻿{
+  "name": "@auto-gha/resolver",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@zcicd/planner": "workspace:*"
+    "@auto-gha/planner": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

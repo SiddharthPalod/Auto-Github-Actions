@@ -1,4 +1,4 @@
-import type { ProjectState } from "@zcicd/state";
+﻿import type { ProjectState } from "@auto-gha/state";
 import type {
   SecurityLevel,
   SecurityPolicyIR,
@@ -291,3 +291,4 @@ export function resolveSecurityPolicy(
     }
   };
 }
+

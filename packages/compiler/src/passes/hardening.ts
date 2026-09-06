@@ -1,5 +1,5 @@
-import type { CompilerPass, CompilerContext } from "./types.js";
-import type { WorkflowIR } from "@zcicd/workflow-ir";
+﻿import type { CompilerPass, CompilerContext } from "./types.js";
+import type { WorkflowIR } from "@auto-gha/workflow-ir";
 
 export const productionHardeningPass: CompilerPass = {
   name: "production-hardening",
@@ -34,3 +34,4 @@ export const productionHardeningPass: CompilerPass = {
     };
   }
 };
+

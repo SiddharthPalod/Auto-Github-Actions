@@ -1,7 +1,7 @@
-import type {
+﻿import type {
   PlannedAction,
   WorkflowPlan
-} from "@zcicd/planner";
+} from "@auto-gha/planner";
 
 import {
   resolverRegistry

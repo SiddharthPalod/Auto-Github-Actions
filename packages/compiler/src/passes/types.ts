@@ -1,7 +1,7 @@
-import type { WorkflowIR } from "@zcicd/workflow-ir";
-import type { ProjectState } from "@zcicd/state";
-import type { WorkflowPlan } from "@zcicd/planner";
-import type { ResolvedWorkflowPlan } from "@zcicd/resolver";
+﻿import type { WorkflowIR } from "@auto-gha/workflow-ir";
+import type { ProjectState } from "@auto-gha/state";
+import type { WorkflowPlan } from "@auto-gha/planner";
+import type { ResolvedWorkflowPlan } from "@auto-gha/resolver";
 
 export type OptimizationOptions = {
   enableCaching?: boolean;
@@ -28,3 +28,4 @@ export interface CompilerPass {
   readonly description: string;
   transform(ir: WorkflowIR, context: CompilerContext): WorkflowIR;
 }
+
