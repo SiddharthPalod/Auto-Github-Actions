@@ -40,6 +40,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Semgrep scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "semgrep.sarif"
@@ -70,6 +71,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Hadolint scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "hadolint.sarif"
@@ -97,6 +99,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload tfsec scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "tfsec.sarif"
@@ -149,6 +152,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Brakeman scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "brakeman.sarif"
@@ -189,11 +193,13 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
             name: "Run Google OSV-Scanner",
             uses: "google/osv-scanner-action/osv-scanner-action@v1.9.0",
             with: {
-              "scan-args": "--format=sarif --output=osv-results.sarif ."
-            }
+              "scan-args": "--call-analysis=false --format=sarif --output=osv-results.sarif ."
+            },
+            "continue-on-error": true
           },
           {
             name: "Upload OSV-Scanner results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "osv-results.sarif"
@@ -222,6 +228,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Scorecard scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "scorecard-results.sarif"
@@ -248,6 +255,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload njsscan scan results",
+            if: "always()",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "njsscan.sarif"
