@@ -36,6 +36,32 @@ function isGitRepo(dirPath: string): boolean {
   }
 }
 
+function renderAuthTroubleshootingNote(repoInfo?: { owner: string; repo: string } | null, branchName?: string): void {
+  const repoSlug = repoInfo ? `${repoInfo.owner}/${repoInfo.repo}` : "<owner>/<repo>";
+  const branch = branchName || "main";
+
+  const guide = [
+    pc.bold("You need write permissions to push to GitHub. Here is how to authenticate:"),
+    "",
+    pc.cyan(pc.bold("1. GitHub CLI (Recommended & Fastest):")),
+    `   ${pc.bold("gh auth login")}`,
+    `   ${pc.bold("gh auth setup-git")}`,
+    "",
+    pc.cyan(pc.bold("2. Personal Access Token (PAT):")),
+    `   a. Create a token at: ${pc.underline("https://github.com/settings/tokens")} (select 'repo' & 'workflow')`,
+    `   b. Push with your token:`,
+    `      ${pc.bold(`git push https://<YOUR_TOKEN>@github.com/${repoSlug}.git ${branch}`)}`,
+    "",
+    pc.cyan(pc.bold("3. SSH Key:")),
+    `   a. Add your SSH Key: ${pc.underline("https://github.com/settings/keys")}`,
+    `   b. Set remote & push:`,
+    `      ${pc.bold(`git remote set-url origin git@github.com:${repoSlug}.git`)}`,
+    `      ${pc.bold(`git push -u origin ${branch}`)}`
+  ].join("\n");
+
+  note(guide, "🔑 GitHub Authentication Safety Net");
+}
+
 /**
  * Wizard v2: Clean multi-stage compilation pipeline with Unified Git Branching
  */
@@ -310,16 +336,20 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
         const defaultSaveDir = `./${repoName}-ci`;
         const defaultBranchName = `auto-gha/setup-ci-${Date.now()}`;
 
-        let deliveryOptions = [
+        const deliveryOptions = [
           {
             value: "branch-commit",
-            label: `🌿 Create Git Branch & Commit Changes ${pc.green("(Recommended)")}`,
-            hint: `Creates branch '${defaultBranchName}' and commits all .github/ files`
+            label: `🌿 Create Git Branch, Commit & Push to GitHub ${pc.green("(Recommended)")}`,
+            hint: `Creates branch '${defaultBranchName}', commits all .github/ files, and opens PR`
           },
           {
-            value: "write-only",
-            label: "💾 Write files directly without Git branch or commit",
-            hint: "Writes .github/ files directly to working tree"
+            value: isRemote ? "save-local" : "write-only",
+            label: isRemote
+              ? `💾 Save configuration files locally to ${defaultSaveDir}`
+              : "💾 Write files directly to current repository without branch/commit",
+            hint: isRemote
+              ? `Writes files to local folder ${defaultSaveDir}`
+              : "Writes .github/ files directly to working tree"
           },
           {
             value: "preview",
@@ -328,25 +358,10 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
           }
         ];
 
-        if (isRemote) {
-          deliveryOptions = [
-            {
-              value: "save-local",
-              label: `💾 Save generated workflows to local folder ${pc.green("(Recommended)")}`,
-              hint: `Saves all .github/ configuration files to ${defaultSaveDir}`
-            },
-            {
-              value: "preview",
-              label: "👁️  Preview only",
-              hint: "Exit without writing files"
-            }
-          ];
-        }
-
         const deliveryAction = await select({
           message: "How would you like to apply these configurations?",
           options: deliveryOptions,
-          initialValue: isRemote ? "save-local" : "branch-commit"
+          initialValue: "branch-commit"
         });
 
         if (isCancel(deliveryAction) || deliveryAction === "preview") {
@@ -403,7 +418,7 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
           return;
         }
 
-        // Option: Git Branch & Commit
+        // Option: Git Branch & Commit & Push
         if (deliveryAction === "branch-commit") {
           if (!isGitRepo(scanPath)) {
             log.warn(pc.yellow("⚠️  Target directory is not a Git repository. Initializing new git repository..."));
@@ -460,7 +475,7 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
             s.stop(pc.yellow("⚠️  Files written, but git commit was skipped or already clean."));
           }
 
-          // Push branch?
+          // Push branch to origin
           const shouldPush = await confirm({
             message: `Push branch '${branchName}' to remote origin and generate 1-click Pull Request link?`,
             initialValue: true
@@ -491,13 +506,43 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
             } catch (pushErr: any) {
               s.stop(pc.yellow("⚠️  Could not push branch to remote origin."));
               log.warn(pushErr?.message || String(pushErr));
+
+              const repoInfo = getRemoteRepoInfo(scanPath, target);
+              renderAuthTroubleshootingNote(repoInfo, branchName);
+
+              // If push failed and this was a remote clone, offer to save files locally so work is not lost
+              if (isRemote) {
+                const saveFallback = await confirm({
+                  message: `Would you like to save the generated files locally to ${defaultSaveDir}?`,
+                  initialValue: true
+                });
+
+                if (!isCancel(saveFallback) && saveFallback) {
+                  const baseDir = path.resolve(process.cwd(), defaultSaveDir);
+                  for (const file of generatedFiles) {
+                    const fullPath = path.resolve(baseDir, file.relativePath);
+                    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+                    await fs.writeFile(fullPath, file.content, "utf8");
+                  }
+                  outro(
+                    pc.green(
+                      `✨ Saved files locally to ${pc.bold(baseDir)}!\n\n` +
+                      `   After logging into GitHub, you can push your changes:\n` +
+                      `   1. cd "${defaultSaveDir}"\n` +
+                      `   2. gh auth login\n` +
+                      `   3. git push -u origin ${branchName}`
+                    )
+                  );
+                  return;
+                }
+              }
             }
           }
 
           outro(
             pc.green(
               `✨ Branch ${pc.bold(branchName)} is ready locally!\n\n` +
-              `   To publish to GitHub when ready, run:\n` +
+              `   To push to GitHub once authenticated:\n` +
               `   git push -u origin ${branchName}`
             )
           );
