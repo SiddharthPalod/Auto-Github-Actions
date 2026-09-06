@@ -10,12 +10,14 @@ export function resolveDeployAws(action: PlannedAction): ResolvedPrimitive[] {
   return template.steps.map((step: WorkflowStepPattern) => ({
     ...step,
     actionId: action.id,
-    provenance: {
+    reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
       source: "actions/starter-workflows:deployments/aws.yml",
       templateId: template.id,
       rationale: action.reason
     }
-  }));
+  })) as ResolvedPrimitive[];
 }
 
 export function resolveDeployGcp(action: PlannedAction): ResolvedPrimitive[] {
@@ -25,12 +27,14 @@ export function resolveDeployGcp(action: PlannedAction): ResolvedPrimitive[] {
   return template.steps.map((step: WorkflowStepPattern) => ({
     ...step,
     actionId: action.id,
-    provenance: {
+    reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
       source: "actions/starter-workflows:deployments/google-cloudrun-docker.yml",
       templateId: template.id,
       rationale: action.reason
     }
-  }));
+  })) as ResolvedPrimitive[];
 }
 
 export function resolveDeployAzure(action: PlannedAction): ResolvedPrimitive[] {
@@ -40,12 +44,14 @@ export function resolveDeployAzure(action: PlannedAction): ResolvedPrimitive[] {
   return template.steps.map((step: WorkflowStepPattern) => ({
     ...step,
     actionId: action.id,
-    provenance: {
+    reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
       source: "actions/starter-workflows:deployments/azure-container-webapp.yml",
       templateId: template.id,
       rationale: action.reason
     }
-  }));
+  })) as ResolvedPrimitive[];
 }
 
 export function resolveDeployKubernetes(action: PlannedAction): ResolvedPrimitive[] {
@@ -55,12 +61,14 @@ export function resolveDeployKubernetes(action: PlannedAction): ResolvedPrimitiv
   return template.steps.map((step: WorkflowStepPattern) => ({
     ...step,
     actionId: action.id,
-    provenance: {
+    reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
       source: "actions/starter-workflows:deployments/azure-kubernetes-service-helm.yml",
       templateId: template.id,
       rationale: action.reason
     }
-  }));
+  })) as ResolvedPrimitive[];
 }
 
 export function resolveDeployTerraform(action: PlannedAction): ResolvedPrimitive[] {
@@ -70,25 +78,41 @@ export function resolveDeployTerraform(action: PlannedAction): ResolvedPrimitive
   return template.steps.map((step: WorkflowStepPattern) => ({
     ...step,
     actionId: action.id,
-    provenance: {
+    reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
       source: "actions/starter-workflows:deployments/terraform.yml",
       templateId: template.id,
       rationale: action.reason
     }
-  }));
+  })) as ResolvedPrimitive[];
 }
 
 export function resolveDeployGhcr(action: PlannedAction): ResolvedPrimitive[] {
   const template = STARTER_WORKFLOWS_CATALOG["deployments/docker-publish.yml"];
   if (!template) return [];
 
-  return template.steps.map((step: WorkflowStepPattern) => ({
-    ...step,
-    actionId: action.id,
-    provenance: {
-      source: "actions/starter-workflows:deployments/docker-publish.yml",
-      templateId: template.id,
-      rationale: action.reason
+  return template.steps.map((step: WorkflowStepPattern) => {
+    let stepWith = step.with;
+    if (step.uses && step.uses.startsWith("docker/build-push-action")) {
+      stepWith = {
+        ...step.with,
+        file: action.inputs?.file ?? "Dockerfile",
+        context: action.inputs?.context ?? "."
+      };
     }
-  }));
+
+    return {
+      ...step,
+      ...(stepWith ? { with: stepWith } : {}),
+      actionId: action.id,
+      reason: action.reason,
+source: action.sourceRule ?? 'starter-workflow',
+provenance: {
+        source: "actions/starter-workflows:deployments/docker-publish.yml",
+        templateId: template.id,
+        rationale: action.reason
+      }
+    };
+  }) as ResolvedPrimitive[];
 }

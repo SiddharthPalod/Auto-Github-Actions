@@ -13,12 +13,16 @@ export const dockerBuildRule: Rule = {
       return noMatch();
     }
 
+    const dockerfile = docker?.evidence?.[0]?.source ?? "Dockerfile";
+    const context = dockerfile.includes("/") ? dockerfile.substring(0, dockerfile.lastIndexOf("/")) : ".";
+
     return {
       matched: true,
       actions: [
         {
           id: "docker-build",
           type: "docker.build",
+          inputs: { file: dockerfile, context },
           reason: "Docker infrastructure detected.",
           sourceRule: "docker-build"
         }

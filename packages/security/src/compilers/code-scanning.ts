@@ -167,10 +167,12 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
       case "dependency-review": {
         steps.push({
           name: "Dependency Review",
+          if: "github.event_name == 'pull_request'",
           uses: "actions/dependency-review-action@v4",
           with: {
             "fail-on-severity": scanner.failOnError ? "high" : "critical"
-          }
+          },
+          "continue-on-error": true
         });
         jobs["dependency-review"] = {
           name: "Dependency Review (PR)",

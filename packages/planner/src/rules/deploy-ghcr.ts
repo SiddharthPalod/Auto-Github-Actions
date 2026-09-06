@@ -8,13 +8,16 @@ export const deployGhcrRule: Rule = {
     const dockerCap = findCapability(capabilities, "infra.docker");
     if (!dockerCap) return noMatch();
 
+    const dockerfile = dockerCap?.evidence?.[0]?.source ?? "Dockerfile";
+    const context = dockerfile.includes("/") ? dockerfile.substring(0, dockerfile.lastIndexOf("/")) : ".";
+
     return {
       matched: true,
       actions: [
         {
           id: "deploy-ghcr-image",
           type: "deploy.ghcr",
-          inputs: { registry: "ghcr.io" },
+          inputs: { registry: "ghcr.io", file: dockerfile, context },
           reason: "Dockerfile detected with container deployment intent.",
           sourceRule: "deploy-ghcr"
         }

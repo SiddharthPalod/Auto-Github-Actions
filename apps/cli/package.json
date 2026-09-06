@@ -1,18 +1,30 @@
 {
-  "name": "@zcicd/cli",
-  "version": "0.0.1",
-  "private": true,
+  "name": "auto-gha",
+  "version": "1.0.0",
+  "description": "Zero-configuration GitHub Actions workflow generator",
+  "author": "Siddharth",
+  "license": "MIT",
+  "keywords": ["github-actions", "ci", "cd", "generator", "automation"],
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "zcicd": "dist/index.js"
+    "auto-gha": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "tsx src/index.ts",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
     "@zcicd/compiler": "workspace:*",
     "@zcicd/github": "workspace:*",
     "@zcicd/planner": "workspace:*",
@@ -22,10 +34,7 @@
     "@zcicd/security": "workspace:*",
     "@zcicd/state": "workspace:*",
     "@zcicd/workflow-ir": "workspace:*",
-    "picocolors": "^1.1.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22.20.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
     "vitest": "^3.2.0"

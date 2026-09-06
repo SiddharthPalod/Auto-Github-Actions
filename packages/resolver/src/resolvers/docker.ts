@@ -10,7 +10,11 @@ export function resolveDockerBuild(action: PlannedAction): ResolvedPrimitive[] {
     {
       kind: "uses",
       uses: dockerStep?.uses ?? "docker/build-push-action@v6",
-      with: dockerStep?.with ?? { push: false },
+      with: {
+        ...(dockerStep?.with ?? { push: false }),
+        file: action.inputs?.file ?? "Dockerfile",
+        context: action.inputs?.context ?? "."
+      },
       reason: "Build Docker image from starter workflow pattern.",
       source: `actions/starter-workflows:${template.id}`,
       actionId: action.id

@@ -32,7 +32,7 @@ function getRemoteRepoInfo(scanPath: string, targetUrl?: string): { owner: strin
  */
 export async function runInteractiveWizardV2(): Promise<void> {
   console.clear();
-  intro(pc.bgCyan(pc.black(" Zero-Config CI/CD Engine (v2 - Live Pipeline) ")));
+  intro(pc.bgCyan(pc.black(" Auto GitHub Actions (auto-gha) ")));
 
   // 1. Ask for repository target path or URL
   const targetInput = await text({

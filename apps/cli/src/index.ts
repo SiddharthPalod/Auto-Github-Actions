@@ -18,10 +18,10 @@ const targetArg = args.find(arg => !arg.startsWith("-"));
 
 if (args.includes("--help") || args.includes("-h")) {
   console.log(`
-Zero-Config CI/CD Engine
+Auto GitHub Actions (auto-gha)
 
 Usage:
-  zcicd [options] [path|url]
+  auto-gha [options] [path|url]
 
 Options:
   --v2                 Run Wizard v2 (Live compiler pipeline with rich animations - Default)
@@ -30,10 +30,10 @@ Options:
   --help, -h          Show this help message
 
 Examples:
-  zcicd
-  zcicd --v1
-  zcicd ./my-project
-  zcicd --inspect https://github.com/expressjs/express
+  auto-gha
+  auto-gha --v1
+  auto-gha ./my-project
+  auto-gha --inspect https://github.com/expressjs/express
 `);
   process.exit(0);
 }

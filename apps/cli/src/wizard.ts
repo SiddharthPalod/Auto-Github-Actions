@@ -13,7 +13,7 @@ import { withRepository, isRemoteUrl } from "./git.js";
  * Wizard v1: Minimalist, fast interactive flow with Security Policy support
  */
 export async function runInteractiveWizard(): Promise<void> {
-  intro(pc.bgCyan(pc.black(" Zero-Config CI/CD Engine (v1) ")));
+  intro(pc.bgCyan(pc.black(" Auto GitHub Actions (auto-gha) ")));
 
   const targetInput = await text({
     message: "Enter the repository path or GitHub URL to scan:",
