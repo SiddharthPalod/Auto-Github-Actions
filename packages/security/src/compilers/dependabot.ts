@@ -12,7 +12,12 @@ export function compileDependabotYAML(policy: SecurityPolicyIR): string {
     schedule: {
       interval: target.interval
     },
-    "open-pull-requests-limit": policy.level === "strict" ? 15 : 10,
+    "open-pull-requests-limit": 5,
+    groups: {
+      dependencies: {
+        patterns: ["*"]
+      }
+    },
     ...(policy.level === "strict"
       ? {
           labels: ["dependencies", "security"],
