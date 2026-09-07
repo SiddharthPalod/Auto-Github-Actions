@@ -1,17 +1,17 @@
 {
   "name": "auto-gha",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Zero-configuration GitHub Actions workflow generator",
   "author": "Siddharth Palod",
   "license": "MIT",
-  "homepage": "https://github.com/SiddharthPalod/zero-config-cicd#readme",
+  "homepage": "https://github.com/SiddharthPalod/Auto-Github-Actions#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SiddharthPalod/zero-config-cicd.git",
+    "url": "git+https://github.com/SiddharthPalod/Auto-Github-Actions.git",
     "directory": "apps/cli"
   },
   "bugs": {
-    "url": "https://github.com/SiddharthPalod/zero-config-cicd/issues"
+    "url": "https://github.com/SiddharthPalod/Auto-Github-Actions/issues"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -36,7 +36,10 @@
     "auto-gha": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "SECURITY.md",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",

@@ -1,22 +1,42 @@
-# Auto GitHub Actions (auto-gha)
+# Auto GitHub Actions (`auto-gha`)
+
+> **Zero-Configuration GitHub Actions Workflow & Security Policy Compiler**
+
+[![npm version](https://img.shields.io/npm/v/auto-gha.svg?color=blue)](https://www.npmjs.com/package/auto-gha)
+[![npm downloads](https://img.shields.io/npm/dm/auto-gha.svg)](https://www.npmjs.com/package/auto-gha)
+[![GitHub stars](https://img.shields.io/github/stars/SiddharthPalod/Auto-Github-Actions?style=social)](https://github.com/SiddharthPalod/Auto-Github-Actions)
+[![license](https://img.shields.io/github/license/SiddharthPalod/Auto-Github-Actions)](https://github.com/SiddharthPalod/Auto-Github-Actions/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-workspace-orange?logo=pnpm)](https://pnpm.io/)
 
 A deterministic policy compiler that inspects codebases, deduces capabilities, resolves official GitHub Actions patterns from a curated knowledge catalog, compiles type-safe, multi-job CI/CD workflows, and automatically orchestrates security policies, code scanning, and GitHub Pull Requests with zero manual configuration.
 
-## 🚀 Installation & Usage
+📦 **npm Package**: [https://www.npmjs.com/package/auto-gha](https://www.npmjs.com/package/auto-gha)  
+🔗 **GitHub Repository**: [https://github.com/SiddharthPalod/Auto-Github-Actions](https://github.com/SiddharthPalod/Auto-Github-Actions)
 
-You can use the CLI instantly without downloading the repository by running:
+---
+
+## ⚡ Instant Usage
+
+Run it directly in your project folder with `npx` (no install needed):
 
 ```bash
-npx auto-gha [path|url]
+npx auto-gha
 ```
 
-Example:
+Scan any specific folder or remote public GitHub repository:
+
 ```bash
-npx auto-gha .
+# Scan a local folder
+npx auto-gha ./my-project
+
+# Scan a remote GitHub repo
 npx auto-gha https://github.com/expressjs/express
 ```
 
-## 🛠 Contributing & Local Development
+---
+
+## 🛠️ Contributing & Local Development
 
 We welcome contributions! This project is a monorepo managed by `pnpm`.
 
@@ -27,12 +47,12 @@ We welcome contributions! This project is a monorepo managed by `pnpm`.
 ### Setup
 
 ```bash
-git clone <repository-url>
-cd zero-config-cicd
+git clone https://github.com/SiddharthPalod/Auto-Github-Actions.git
+cd Auto-Github-Actions
 pnpm install
 ```
 
-### Build & Run
+### Build & Test
 
 To build all engine layers and the CLI:
 ```bash
@@ -121,31 +141,25 @@ Repository / Remote Git URL
 | **`@auto-gha/security`** | Phase 6 Engine | Security Policy IR & Multi-artifact Security Compiler (Dependabot, CodeQL, Code Scanning, Trivy, Audits). |
 | **`@auto-gha/reconciliation`** | Phase 7 Engine | Semantic AST diffing & non-destructive merging with existing `.github/workflows`. |
 | **`@auto-gha/github`** | Phase 7 Automation | Native Git branch management and GitHub Pull Request automation. |
-| **`@auto-gha/cli`** | Developer CLI | Terminal runner with interactive live progress (Wizard v2), minimalist mode (v1), and `--inspect`. |
+| **`auto-gha` (`apps/cli`)** | Developer CLI | Terminal runner with interactive live progress (Wizard v2), minimalist mode (v1), and `--inspect`. |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 CLI Modes
 
 ### 1. Interactive CLI Wizard
 Run the interactive wizard (defaults to Wizard v2 with live multi-phase visual feedback):
 ```bash
-pnpm --filter @auto-gha/cli dev          # Wizard v2 (Live compiler pipeline + Unified Git Delivery)
-pnpm --filter @auto-gha/cli dev --v1     # Wizard v1 (Minimalist fast flow)
+npx auto-gha
+# or during development:
+pnpm --filter auto-gha dev
 ```
 
 ### 2. Non-Interactive Inspection & Scripting
 Print the AST, DAG structure, and compiled YAML to stdout:
 ```bash
-pnpm --filter @auto-gha/cli dev --inspect "../path-to-project"
-pnpm --filter @auto-gha/cli dev --inspect "https://github.com/expressjs/express"
-```
-
-### 3. Build & Test Monorepo
-```bash
-pnpm install
-pnpm -r build
-pnpm -r test
+npx auto-gha --inspect "../path-to-project"
+npx auto-gha --inspect "https://github.com/expressjs/express"
 ```
 
 ---
@@ -161,7 +175,7 @@ pnpm -r test
 
 ---
 
-## 🛠️ Table 1: Supported CI/CD Ecosystems Catalog (`ci/`)
+## 🛠️ Supported CI/CD Ecosystems Catalog (`ci/`)
 
 The engine automatically discovers project manifests across root and subdirectories and provisions official GitHub Actions templates:
 
@@ -185,7 +199,7 @@ The engine automatically discovers project manifests across root and subdirector
 
 ---
 
-## 🛡️ Table 2: Code Scanning & Security Scanners Matrix (`code-scanning/`)
+## 🛡️ Code Scanning & Security Scanners Matrix (`code-scanning/`)
 
 The engine configures specialized static analysis (SAST), infrastructure security (IaC), and supply chain tools into `.github/workflows/code-scanning.yml`:
 
@@ -208,7 +222,7 @@ The engine configures specialized static analysis (SAST), infrastructure securit
 
 ---
 
-## ☁️ Table 3: Continuous Deployment & Cloud Targets Catalog (`deployments/`)
+## ☁️ Continuous Deployment & Cloud Targets Catalog (`deployments/`)
 
 The engine configures downstream, environment-guarded Continuous Deployment (CD) jobs that execute only after all CI tests pass on `main`:
 
@@ -223,66 +237,6 @@ The engine configures downstream, environment-guarded Continuous Deployment (CD)
 
 ---
 
-## 📖 Master Guide: Integrating New Tools & Starter Workflows
+## 📄 License
 
-The official GitHub [`actions/starter-workflows`](https://github.com/actions/starter-workflows) repository contains 4 distinct categories of workflows:
-
-```text
-actions/starter-workflows
-├── ci/               (Continuous Integration: Java, .NET, Ruby, PHP, Rust, Go, C++, etc.)
-├── deployments/      (Continuous Deployment: AWS ECS, Azure WebApp, GCP Cloud Run, GHCR, etc.)
-├── code-scanning/    (SAST & Security: CodeQL, Semgrep, Hadolint, Bandit, Brakeman, etc.)
-└── automation/       (Repo Automation: Release-Drafter, Stale, Labeler, Dependabot Auto-Merge, etc.)
-```
-
-Below is the **Universal 5-Layer Integration Protocol** to connect any workflow template from `actions/starter-workflows` into the Zero-Config CI/CD Engine.
-
----
-
-### The Universal 5-Layer Integration Protocol
-
-```text
-1. State Layer       Define new runtime/framework/infrastructure types & evidence models in @auto-gha/state
-        │
-        ▼
-2. Scanner Layer     Implement filesystem detectors in @auto-gha/scanner to discover manifests & file markers
-        │
-        ▼
-3. Planner Layer     Declare capability IDs and policy rules in @auto-gha/planner to deduce actions from facts
-        │
-        ▼
-4. Resolver Layer    Ingest template into catalog in @auto-gha/resolver and map actions to concrete steps
-        │
-        ▼
-5. Compiler Layer    Partition primitives into parallel DAG jobs, inject caching/hardening in @auto-gha/compiler
-```
-
----
-
-## 📋 Integration Checklist for New Tools
-
-Before opening a PR adding a new workflow tool, verify:
-- [ ] **State Types:** Added runtime/tooling name in `@auto-gha/state`.
-- [ ] **Filesystem Detector:** Deterministic crawl without false positives (handles root & subdirectories) in `@auto-gha/scanner`.
-- [ ] **Capability & Rule:** Declarative capability mapping with provenance evidence in `@auto-gha/planner`.
-- [ ] **Catalog Step:** Exact action source URLs and versions in `@auto-gha/resolver`.
-- [ ] **DAG Routing:** Independent parallel job with proper `runs-on`, `timeout-minutes`, `needs`, and `permissions` in `@auto-gha/compiler`.
-- [ ] **Optimization Passes:** Caching keys (`cache-dependency-path`) and production hardening configured.
-- [ ] **Unit Tests:** Added detector, planner, and compiler test cases with 100% green coverage (`pnpm -r test`).
-
----
-
-## 🗺️ Roadmap & Phase Plan
-
-- [x] **Phase 0:** Engine Foundation (pnpm workspace, TS base configs, Vitest, package boundaries)
-- [x] **Phase 1:** Deterministic Repository Scanner (Node, Python, Go, Rust, Docker detectors, Snapshot tests)
-- [x] **Phase 2:** Capability Model + Policy Rules Engine (Capabilities normalization, Action deduplication)
-- [x] **Phase 3 & 3B:** Starter Workflow Knowledge Catalog & Resolver (Ingestion of `actions/starter-workflows`, Provenance tracking)
-- [x] **Phase 4:** Typed Workflow IR & Deterministic Compiler (Job partitioning, DAG cycle validation, YAML emitter)
-- [x] **Phase 5:** Optimization Passes (Dependency Caching, Job Timeouts, Concurrency Cancellation, Matrix Testing)
-- [x] **Phase 6:** Security Policy Compiler (Dependabot, CodeQL, Container scanning, Policy levels)
-- [x] **Phase 6B:** Universal Code Scanning Catalog (Hadolint, Bandit, Brakeman, Semgrep, tfsec, njsscan, OSV, Scorecard)
-- [x] **Phase 7:** Workflow Reconciliation + Automated GitHub PRs (Semantic AST diffing & 1-click PR links)
-- [x] **Phase 8:** Continuous Deployment (CD) Catalog (AWS ECS, GCP Cloud Run, Azure WebApp, Helm K8s, Terraform, GHCR)
-- [ ] **Phase 9:** CI Observability (P50/P95 durations, failure rates, compute cost estimation)
-- [ ] **Phase 10:** Data-Driven & Change-Aware Optimization (`paths-filter` selective job execution)
+MIT © [Siddharth Palod](https://github.com/SiddharthPalod)
