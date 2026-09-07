@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { ProjectState } from "@auto-gha/state";
 import { compileSecurityPolicy, resolveSecurityPolicy } from "./index.js";
 
@@ -74,7 +74,7 @@ describe("Phase 6 - Security Policy Compiler", () => {
     expect(artifacts.securityWorkflowYaml).toContain("npm audit");
     expect(artifacts.securityWorkflowYaml).toContain("pip-audit");
     expect(artifacts.securityWorkflowYaml).toContain("aquasecurity/trivy-action");
-    expect(artifacts.securityWorkflowYaml).toContain("local-scan-target:latest");
+    expect(artifacts.securityWorkflowYaml).toContain("scan-type: fs");
   });
 
   it("enforces Strict mode with daily Dependabot, Gitleaks, Harden-Runner, and blocking gates", () => {

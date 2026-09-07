@@ -1,4 +1,4 @@
-﻿import type { PlannedAction } from "@auto-gha/planner";
+import type { PlannedAction } from "@auto-gha/planner";
 import type { ResolvedPrimitive } from "../types.js";
 import { STARTER_WORKFLOWS_CATALOG } from "../catalog/starter-workflows.js";
 
@@ -36,14 +36,12 @@ export function resolveDependencyInstall(action: PlannedAction): ResolvedPrimiti
       ];
 
     case "npm": {
-      const template = STARTER_WORKFLOWS_CATALOG["ci/node.js.yml"];
-      const installStep = template.steps.find(s => s.id === "npm-ci");
       return [
         {
           kind: "run",
-          run: installStep?.run ?? "npm ci",
+          run: "if [ -f package-lock.json ]; then npm ci; else npm install; fi",
           reason: "Install Node.js dependencies with npm according to starter workflow.",
-          source: `actions/starter-workflows:${template.id}`,
+          source: "actions/starter-workflows:ci/node.js.yml",
           actionId: action.id
         }
       ];

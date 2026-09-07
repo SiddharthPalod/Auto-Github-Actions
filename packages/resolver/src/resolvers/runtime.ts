@@ -1,4 +1,4 @@
-﻿import type { PlannedAction } from "@auto-gha/planner";
+import type { PlannedAction } from "@auto-gha/planner";
 import type { ResolvedPrimitive } from "../types.js";
 import { STARTER_WORKFLOWS_CATALOG } from "../catalog/starter-workflows.js";
 
@@ -185,7 +185,6 @@ export function resolveRuntimeSetup(action: PlannedAction): ResolvedPrimitive[] 
 export function resolveGoBuild(action: PlannedAction): ResolvedPrimitive[] {
   const template = STARTER_WORKFLOWS_CATALOG["ci/go.yml"];
   const setupStep = template.steps.find(s => s.id === "setup-go");
-  const buildStep = template.steps.find(s => s.id === "go-build");
 
   return [
     {
@@ -200,7 +199,7 @@ export function resolveGoBuild(action: PlannedAction): ResolvedPrimitive[] {
     },
     {
       kind: "run",
-      run: buildStep?.run ?? "go build -v ./...",
+      run: "if [ -f go.mod ]; then go build -v ./...; else for mod in $(find . -name 'go.mod' -not -path '*/.*'); do (cd \"$(dirname \"$mod\")\" && echo \"Building $(dirname \"$mod\")...\" && go build -v ./...); done; fi",
       reason: "Compile Go packages according to starter workflow.",
       source: `actions/starter-workflows:${template.id}`,
       actionId: action.id
@@ -209,15 +208,12 @@ export function resolveGoBuild(action: PlannedAction): ResolvedPrimitive[] {
 }
 
 export function resolveGoTest(action: PlannedAction): ResolvedPrimitive[] {
-  const template = STARTER_WORKFLOWS_CATALOG["ci/go.yml"];
-  const testStep = template.steps.find(s => s.id === "go-test");
-
   return [
     {
       kind: "run",
-      run: testStep?.run ?? "go test -v ./...",
+      run: "if [ -f go.mod ]; then go test -v ./...; else for mod in $(find . -name 'go.mod' -not -path '*/.*'); do (cd \"$(dirname \"$mod\")\" && echo \"Testing $(dirname \"$mod\")...\" && go test -v ./...); done; fi",
       reason: "Run Go test suite according to starter workflow.",
-      source: `actions/starter-workflows:${template.id}`,
+      source: "actions/starter-workflows:ci/go.yml",
       actionId: action.id
     }
   ];
@@ -254,30 +250,24 @@ export function resolvePythonTest(action: PlannedAction): ResolvedPrimitive[] {
 }
 
 export function resolveRustBuild(action: PlannedAction): ResolvedPrimitive[] {
-  const template = STARTER_WORKFLOWS_CATALOG["ci/rust.yml"];
-  const buildStep = template.steps.find(s => s.id === "cargo-build");
-
   return [
     {
       kind: "run",
-      run: buildStep?.run ?? "cargo build --verbose",
+      run: "if [ -f Cargo.toml ]; then cargo build --verbose; else for toml in $(find . -name 'Cargo.toml' -not -path '*/.*' -not -path '*/target/*'); do (cd \"$(dirname \"$toml\")\" && echo \"Building $(dirname \"$toml\")...\" && cargo build --verbose); done; fi",
       reason: "Compile Rust crates according to starter workflow.",
-      source: `actions/starter-workflows:${template.id}`,
+      source: "actions/starter-workflows:ci/rust.yml",
       actionId: action.id
     }
   ];
 }
 
 export function resolveRustTest(action: PlannedAction): ResolvedPrimitive[] {
-  const template = STARTER_WORKFLOWS_CATALOG["ci/rust.yml"];
-  const testStep = template.steps.find(s => s.id === "cargo-test");
-
   return [
     {
       kind: "run",
-      run: testStep?.run ?? "cargo test --verbose",
+      run: "if [ -f Cargo.toml ]; then cargo test --verbose; else for toml in $(find . -name 'Cargo.toml' -not -path '*/.*' -not -path '*/target/*'); do (cd \"$(dirname \"$toml\")\" && echo \"Testing $(dirname \"$toml\")...\" && cargo test --verbose); done; fi",
       reason: "Run Rust tests according to starter workflow.",
-      source: `actions/starter-workflows:${template.id}`,
+      source: "actions/starter-workflows:ci/rust.yml",
       actionId: action.id
     }
   ];

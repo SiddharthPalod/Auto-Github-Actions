@@ -1,4 +1,4 @@
-﻿import type { ProjectState } from "@auto-gha/state";
+import type { ProjectState } from "@auto-gha/state";
 import type {
   SecurityLevel,
   SecurityPolicyIR,
@@ -165,7 +165,7 @@ export function resolveSecurityPolicy(
   if (runtimes.includes("go")) {
     nativeAudits.push({
       tool: "govulncheck",
-      command: "go install golang.org/x/vuln/cmd/govulncheck@latest && govulncheck ./...",
+      command: "go install golang.org/x/vuln/cmd/govulncheck@latest && if [ -f go.mod ]; then govulncheck ./...; else for mod in $(find . -name 'go.mod' -not -path '*/.*'); do (cd \"$(dirname \"$mod\")\" && echo \"Auditing $(dirname \"$mod\")...\" && govulncheck ./...); done; fi",
       failOnError: blockOnVulnerabilities
     });
   }

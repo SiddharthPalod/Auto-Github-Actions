@@ -45,7 +45,7 @@ export function compileSecurityWorkflowYAML(policy: SecurityPolicyIR): string {
     };
   }
 
-  // 2. Container Security Scan (Trivy)
+  // 2. Container & IaC Security Scan (Trivy)
   if (policy.containerScanning.enabled && policy.containerScanning.dockerfiles.length > 0) {
     const containerSteps: Array<Record<string, unknown>> = [
       {
@@ -64,16 +64,10 @@ export function compileSecurityWorkflowYAML(policy: SecurityPolicyIR): string {
       });
     }
 
-    const firstDockerfile = policy.containerScanning.dockerfiles[0];
-    containerSteps.push({
-      name: "Build image for vulnerability scan",
-      run: `docker build -t local-scan-target:latest -f "${firstDockerfile}" .`
-    });
-
     const trivyWith: Record<string, unknown> = {
-      "image-ref": "local-scan-target:latest",
-      format: policy.containerScanning.uploadSarif ? "sarif" : "table",
+      "scan-type": "fs",
       "ignore-unfixed": true,
+      format: policy.containerScanning.uploadSarif ? "sarif" : "table",
       severity: policy.containerScanning.severityThreshold
     };
 
@@ -85,15 +79,22 @@ export function compileSecurityWorkflowYAML(policy: SecurityPolicyIR): string {
       trivyWith["exit-code"] = "1";
     }
 
-    containerSteps.push({
-      name: "Scan container image with Trivy",
+    const trivyStepConfig: Record<string, unknown> = {
+      name: "Scan repository & Docker manifests with Trivy",
       uses: "aquasecurity/trivy-action@master",
       with: trivyWith
-    });
+    };
+
+    if (!policy.enforcement.blockOnVulnerabilities) {
+      trivyStepConfig["continue-on-error"] = true;
+    }
+
+    containerSteps.push(trivyStepConfig);
 
     if (policy.containerScanning.uploadSarif) {
       containerSteps.push({
         name: "Upload Trivy scan results to GitHub Security tab",
+        if: "always()",
         uses: "github/codeql-action/upload-sarif@v3",
         with: {
           sarif_file: "trivy-results.sarif"
@@ -102,7 +103,7 @@ export function compileSecurityWorkflowYAML(policy: SecurityPolicyIR): string {
     }
 
     jobs["container-security"] = {
-      name: "Container Vulnerability Scan (Trivy)",
+      name: "Container & Manifest Security (Trivy)",
       "runs-on": "ubuntu-latest",
       "timeout-minutes": 15,
       steps: containerSteps
