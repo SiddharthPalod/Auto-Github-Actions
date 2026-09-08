@@ -28,7 +28,6 @@ export function resolveDependencyInstall(action: PlannedAction): ResolvedPrimiti
         {
           kind: "uses",
           uses: "pnpm/action-setup@v4",
-          with: { version: "9" },
           reason: "pnpm package manager setup.",
           source: "pnpm/action-setup@v4",
           actionId: action.id
