@@ -66,6 +66,8 @@ jobs:
         run: pnpm -r build
 
       - name: Publish if version updated
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           CURRENT_VERSION=$(node -p "require('./apps/cli/package.json').version")
           NPM_VERSION=$(npm view auto-gha version 2>/dev/null || echo "0.0.0")
