@@ -16,6 +16,15 @@ export const elixirDetector: Detector = {
         name: "mix",
         evidence: mixFiles.map(file => ({ source: file, value: "mix.exs" }))
       });
+    } else {
+      const exFiles = context.findFiles(f => f.endsWith(".ex") || f.endsWith(".exs"));
+      if (exFiles.length > 0) {
+        state.runtime.push({
+          name: "elixir",
+          version: "1.15",
+          evidence: exFiles.slice(0, 5).map(file => ({ source: file, value: "Elixir source file (.ex)" }))
+        });
+      }
     }
   }
 };

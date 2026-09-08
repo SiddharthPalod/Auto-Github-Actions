@@ -5,7 +5,7 @@ export const rubyDetector: Detector = {
   name: "ruby",
 
   async detect(context: RepositoryContext, state: ProjectState): Promise<void> {
-    const gemfiles = context.findFiles(f => f.endsWith("Gemfile") || f.endsWith(".gemspec"));
+    const gemfiles = context.findFiles(f => f.endsWith("Gemfile") || f.endsWith(".gemspec") || f.endsWith("Rakefile"));
     if (gemfiles.length > 0) {
       state.runtime.push({
         name: "ruby",
@@ -16,6 +16,15 @@ export const rubyDetector: Detector = {
         name: "bundler",
         evidence: gemfiles.map(file => ({ source: file, value: "Bundler detected" }))
       });
+    } else {
+      const rbFiles = context.findFiles(f => f.endsWith(".rb"));
+      if (rbFiles.length > 0) {
+        state.runtime.push({
+          name: "ruby",
+          version: "3.2",
+          evidence: rbFiles.slice(0, 5).map(file => ({ source: file, value: "Ruby source file (.rb)" }))
+        });
+      }
     }
 
     if (context.findFiles(f => f.endsWith("config/application.rb") || f.endsWith("bin/rails")).length > 0) {

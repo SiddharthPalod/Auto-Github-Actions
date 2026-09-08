@@ -11,6 +11,14 @@ export const swiftDetector: Detector = {
         name: "swift",
         evidence: swiftFiles.map(file => ({ source: file, value: "Swift package detected" }))
       });
+    } else {
+      const srcFiles = context.findFiles(f => f.endsWith(".swift"));
+      if (srcFiles.length > 0) {
+        state.runtime.push({
+          name: "swift",
+          evidence: srcFiles.slice(0, 5).map(file => ({ source: file, value: "Swift source file (.swift)" }))
+        });
+      }
     }
   }
 };

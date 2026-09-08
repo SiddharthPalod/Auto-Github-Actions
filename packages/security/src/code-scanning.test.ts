@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { ProjectState } from "@auto-gha/state";
 import { compileSecurityPolicy, resolveSecurityPolicy } from "./index.js";
 
@@ -57,7 +57,7 @@ describe("Phase 6B - Universal Code Scanning Catalog", () => {
     };
 
     const artifacts = compileSecurityPolicy(projectState, "strict");
-    expect(artifacts.codeScanningYaml).toContain("returntocorp/semgrep-action@v1");
+    expect(artifacts.codeScanningYaml).toContain("semgrep/semgrep-action@v1");
     expect(artifacts.codeScanningYaml).toContain("ossf/scorecard-action@v2.4.0");
     expect(artifacts.codeScanningYaml).toContain("step-security/harden-runner@v2");
   });

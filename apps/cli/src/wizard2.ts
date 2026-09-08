@@ -7,7 +7,13 @@ import { scanRepository } from "@auto-gha/scanner";
 import { planWorkflow } from "@auto-gha/planner";
 import { resolvePlan } from "@auto-gha/resolver";
 import { buildWorkflowIR, compileWorkflowYAML, validateWorkflowIR } from "@auto-gha/compiler";
-import { compileSecurityPolicy, type SecurityLevel } from "@auto-gha/security";
+import {
+  compileSecurityPolicy,
+  compileSecurityArtifacts,
+  resolveSecurityPolicy,
+  type SecurityLevel,
+  type SecurityPolicyIR
+} from "@auto-gha/security";
 import { reconcileWorkflows } from "@auto-gha/reconciliation";
 import { withRepository, isRemoteUrl } from "./git.js";
 
@@ -191,20 +197,23 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
 
         // 2. Interactive Job Selection Checkbox list
         const jobOptions = ir.jobs.map(job => {
-          const needsTag = job.needs && job.needs.length > 0 ? ` (needs: [${job.needs.join(", ")}])` : "";
-          const stepCount = `${job.steps.length} steps`;
+          const isDeploy = job.id.startsWith("deploy") || job.id.startsWith("publish");
+          const icon = isDeploy ? "🚀" : "🧪";
+          const category = isDeploy ? "CD Deployment" : "CI Pipeline";
+          const needsTag = job.needs && job.needs.length > 0 ? ` (after: ${job.needs.join(", ")})` : "";
           return {
             value: job.id,
-            label: `${pc.bold(job.name ?? job.id)}`,
-            hint: `${stepCount} on ${job.runsOn}${needsTag}`
+            label: `${icon} ${pc.bold(job.name ?? job.id)}`,
+            hint: `${category} on ${job.runsOn}${needsTag}`
           };
         });
 
         const selectedJobIds = await multiselect({
-          message: "Select the CI/CD jobs you want to generate (Space to toggle, Enter to confirm):",
+          message: "Select CI/CD jobs to generate (Space to toggle, Enter to confirm):",
           options: jobOptions,
           initialValues: jobOptions.map(j => j.value),
-          required: true
+          required: true,
+          maxItems: 15
         });
 
         if (isCancel(selectedJobIds)) {
@@ -241,26 +250,32 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
           options: [
             {
               value: "standard",
-              label: "Standard (Recommended)",
-              hint: "CodeQL SAST + Container Scans + Dependabot + Audits"
+              label: `🛡️  Standard ${pc.green("(Recommended)")}`,
+              hint: "CodeQL SAST + Trivy container scan + Dependabot + Lockfile audits"
             },
             {
               value: "strict",
-              label: "Strict",
-              hint: "Harden-Runner + Gitleaks + Daily Dependabot + Zero-tolerance gating"
+              label: "🔒 Strict",
+              hint: "Harden-Runner + Gitleaks + Semgrep + Daily Dependabot + Zero-tolerance gating"
             },
             {
               value: "minimal",
-              label: "Minimal",
+              label: "⚡ Minimal",
               hint: "Dependabot + Native lockfile audits only"
             },
             {
+              value: "custom",
+              label: "🛠️  Custom (Fine-Grained Adjustments)",
+              hint: "Selectively toggle CodeQL, Google OSV, Dependabot, Trivy, Gitleaks, etc."
+            },
+            {
               value: "none",
-              label: "None",
+              label: "🚫 None",
               hint: "Skip security configuration"
             }
           ],
-          initialValue: "standard"
+          initialValue: "standard",
+          maxItems: 10
         });
 
         if (isCancel(securityLevelInput)) {
@@ -268,10 +283,133 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
           process.exit(0);
         }
 
-        const securityLevel = securityLevelInput as SecurityLevel;
+        let securityArtifacts;
 
-        log.step(pc.cyan(`[7/7] Security: Compiling security policies for level '${securityLevel}'`));
-        const securityArtifacts = compileSecurityPolicy(state, securityLevel);
+        if (securityLevelInput === "custom") {
+          const basePolicy = resolveSecurityPolicy(state, "standard");
+          const scannerOptions: Array<{ value: string; label: string; hint?: string }> = [];
+
+          if (basePolicy.codeql.enabled && basePolicy.codeql.languages.length > 0) {
+            scannerOptions.push({
+              value: "codeql",
+              label: "🛡️  GitHub CodeQL SAST",
+              hint: `Deep multi-language code analysis for ${basePolicy.codeql.languages.join(", ")}`
+            });
+          }
+
+          if (basePolicy.dependabot.enabled && basePolicy.dependabot.ecosystems.length > 0) {
+            const ecosystems = basePolicy.dependabot.ecosystems.map(e => e.packageEcosystem).join(", ");
+            scannerOptions.push({
+              value: "dependabot",
+              label: "🤖 Dependabot",
+              hint: `Automated version & security PRs for ${ecosystems} (with PR grouping)`
+            });
+          }
+
+          scannerOptions.push({
+            value: "osv-scanner",
+            label: "🔍 Google OSV-Scanner",
+            hint: "Open-source CVE vulnerability scan across repository lockfiles"
+          });
+
+          if (basePolicy.containerScanning.dockerfiles.length > 0) {
+            scannerOptions.push({
+              value: "container-trivy",
+              label: "📦 Trivy Container & IaC Scan",
+              hint: "Vulnerability analysis for Dockerfiles & manifests"
+            });
+            scannerOptions.push({
+              value: "hadolint",
+              label: "🐳 Hadolint Dockerfile Linter",
+              hint: "Lints Dockerfile best practices & security rules"
+            });
+          }
+
+          if (basePolicy.nativeAudits.length > 0) {
+            const auditTools = basePolicy.nativeAudits.map(a => a.tool).join(", ");
+            scannerOptions.push({
+              value: "native-audits",
+              label: "⚡ Native Lockfile Audits",
+              hint: `Runs native audits (${auditTools})`
+            });
+          }
+
+          scannerOptions.push({
+            value: "gitleaks",
+            label: "🔑 Gitleaks (Secret Scanning)",
+            hint: "Detects hardcoded secrets & credentials in git history"
+          });
+
+          scannerOptions.push({
+            value: "semgrep",
+            label: "🧠 Semgrep SAST",
+            hint: "Universal static application security testing"
+          });
+
+          scannerOptions.push({
+            value: "scorecard",
+            label: "📊 OpenSSF Scorecard",
+            hint: "Supply chain security posture & repository health"
+          });
+
+          const selectedCustom = await multiselect({
+            message: "Toggle Security Modules (Space to toggle, Enter to confirm):",
+            options: scannerOptions,
+            initialValues: scannerOptions.slice(0, 5).map(o => o.value),
+            required: false,
+            maxItems: 15
+          });
+
+          if (isCancel(selectedCustom)) {
+            cancel("Operation cancelled.");
+            process.exit(0);
+          }
+
+          const selectedSet = new Set(selectedCustom as string[]);
+
+          const customPolicy: SecurityPolicyIR = {
+            level: "standard",
+            dependabot: {
+              enabled: selectedSet.has("dependabot") && basePolicy.dependabot.ecosystems.length > 0,
+              ecosystems: basePolicy.dependabot.ecosystems
+            },
+            nativeAudits: selectedSet.has("native-audits") ? basePolicy.nativeAudits : [],
+            codeql: {
+              enabled: selectedSet.has("codeql") && basePolicy.codeql.languages.length > 0,
+              languages: basePolicy.codeql.languages,
+              scheduleCron: basePolicy.codeql.scheduleCron
+            },
+            codeScanning: {
+              enabled: selectedSet.has("osv-scanner") || selectedSet.has("hadolint") || selectedSet.has("semgrep") || selectedSet.has("scorecard"),
+              scanners: [
+                ...(selectedSet.has("osv-scanner") ? [{ tool: "osv-scanner" as const, failOnError: false, uploadSarif: true }] : []),
+                ...(selectedSet.has("hadolint") && basePolicy.containerScanning.dockerfiles.length > 0 ? [{ tool: "hadolint" as const, targetPath: basePolicy.containerScanning.dockerfiles[0], failOnError: false, uploadSarif: true }] : []),
+                ...(selectedSet.has("semgrep") ? [{ tool: "semgrep" as const, failOnError: false, uploadSarif: true }] : []),
+                ...(selectedSet.has("scorecard") ? [{ tool: "scorecard" as const, failOnError: false, uploadSarif: true }] : [])
+              ]
+            },
+            containerScanning: {
+              enabled: selectedSet.has("container-trivy") && basePolicy.containerScanning.dockerfiles.length > 0,
+              dockerfiles: basePolicy.containerScanning.dockerfiles,
+              severityThreshold: "HIGH,CRITICAL",
+              uploadSarif: false
+            },
+            secretScanning: {
+              enabled: selectedSet.has("gitleaks"),
+              tool: "gitleaks"
+            },
+            enforcement: {
+              blockOnVulnerabilities: false
+            }
+          };
+
+          log.step(pc.cyan(`[7/7] Security: Compiling customized security policy (${selectedSet.size} tools active)`));
+          securityArtifacts = compileSecurityArtifacts(customPolicy);
+        } else {
+          const securityLevel = securityLevelInput as SecurityLevel;
+          log.step(pc.cyan(`[7/7] Security: Compiling security policies for level '${securityLevel}'`));
+          securityArtifacts = compileSecurityPolicy(state, securityLevel);
+        }
 
         // Filter WorkflowIR jobs by user selection
         const filteredJobs = reconciliation.mergedIR.jobs
@@ -361,7 +499,8 @@ export async function runInteractiveWizardV2(initialTarget?: string): Promise<vo
         const deliveryAction = await select({
           message: "How would you like to apply these configurations?",
           options: deliveryOptions,
-          initialValue: "branch-commit"
+          initialValue: "branch-commit",
+          maxItems: 10
         });
 
         if (isCancel(deliveryAction) || deliveryAction === "preview") {

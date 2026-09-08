@@ -274,11 +274,10 @@ export function resolveRustTest(action: PlannedAction): ResolvedPrimitive[] {
 }
 
 export function resolveJavaBuild(action: PlannedAction): ResolvedPrimitive[] {
-  const isGradle = action.inputs?.tool === "gradle";
-  const templateId = isGradle ? "ci/gradle.yml" : "ci/maven.yml";
-  const template = STARTER_WORKFLOWS_CATALOG[templateId];
+  const tool = action.inputs?.tool;
 
-  if (isGradle) {
+  if (tool === "gradle") {
+    const template = STARTER_WORKFLOWS_CATALOG["ci/gradle.yml"];
     return [
       {
         kind: "uses",
@@ -289,7 +288,7 @@ export function resolveJavaBuild(action: PlannedAction): ResolvedPrimitive[] {
       },
       {
         kind: "run",
-        run: "./gradlew build",
+        run: "if [ -f gradlew ]; then ./gradlew build; else gradle build; fi",
         reason: "Execute Gradle build and tests.",
         source: `actions/starter-workflows:${template.id}`,
         actionId: action.id
@@ -297,12 +296,26 @@ export function resolveJavaBuild(action: PlannedAction): ResolvedPrimitive[] {
     ];
   }
 
+  if (tool === "maven") {
+    const template = STARTER_WORKFLOWS_CATALOG["ci/maven.yml"];
+    return [
+      {
+        kind: "run",
+        run: "if [ -f pom.xml ]; then mvn -B package --file pom.xml; else for pom in $(find . -name 'pom.xml' -not -path '*/.*'); do mvn -B package --file \"$pom\"; done; fi",
+        reason: "Execute Maven build and tests.",
+        source: `actions/starter-workflows:${template.id}`,
+        actionId: action.id
+      }
+    ];
+  }
+
+  // Standalone javac / raw Java project
   return [
     {
       kind: "run",
-      run: "mvn -B package --file pom.xml",
-      reason: "Execute Maven build and tests.",
-      source: `actions/starter-workflows:${template.id}`,
+      run: 'mkdir -p bin && find . -name "*.java" -not -path "*/.*" > sources.txt && javac -d bin @sources.txt',
+      reason: "Compile standalone Java source files with javac.",
+      source: "actions/starter-workflows:ci/java.yml",
       actionId: action.id
     }
   ];

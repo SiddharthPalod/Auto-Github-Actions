@@ -94,7 +94,7 @@ export function compileSecurityWorkflowYAML(policy: SecurityPolicyIR): string {
     if (policy.containerScanning.uploadSarif) {
       containerSteps.push({
         name: "Upload Trivy scan results to GitHub Security tab",
-        if: "always()",
+        if: "always() && hashFiles('trivy-results.sarif') != ''",
         uses: "github/codeql-action/upload-sarif@v3",
         with: {
           sarif_file: "trivy-results.sarif"

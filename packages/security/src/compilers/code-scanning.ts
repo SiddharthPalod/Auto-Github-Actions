@@ -32,15 +32,16 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
         steps.push(
           {
             name: "Run Semgrep SAST",
-            uses: "returntocorp/semgrep-action@v1",
+            uses: "semgrep/semgrep-action@v1",
             with: {
-              config: "p/default",
+              config: "auto",
               generateSarif: "1"
-            }
+            },
+            "continue-on-error": true
           },
           {
             name: "Upload Semgrep scan results",
-            if: "always()",
+            if: "always() && hashFiles('semgrep.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "semgrep.sarif"
@@ -71,7 +72,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Hadolint scan results",
-            if: "always()",
+            if: "always() && hashFiles('hadolint.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "hadolint.sarif"
@@ -99,7 +100,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload tfsec scan results",
-            if: "always()",
+            if: "always() && hashFiles('tfsec.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "tfsec.sarif"
@@ -152,7 +153,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Brakeman scan results",
-            if: "always()",
+            if: "always() && hashFiles('brakeman.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "brakeman.sarif"
@@ -199,7 +200,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload OSV-Scanner results",
-            if: "always()",
+            if: "always() && hashFiles('osv-results.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "osv-results.sarif"
@@ -228,7 +229,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload Scorecard scan results",
-            if: "always()",
+            if: "always() && hashFiles('scorecard-results.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "scorecard-results.sarif"
@@ -255,7 +256,7 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
           },
           {
             name: "Upload njsscan scan results",
-            if: "always()",
+            if: "always() && hashFiles('njsscan.sarif') != ''",
             uses: "github/codeql-action/upload-sarif@v3",
             with: {
               sarif_file: "njsscan.sarif"

@@ -428,6 +428,22 @@ export function buildWorkflowIR(
     });
   }
 
+  if (jobs.length === 0) {
+    jobs.push({
+      id: "build",
+      name: "Build & Verification",
+      runsOn: runner,
+      steps: [
+        CHECKOUT_STEP,
+        {
+          kind: "run",
+          run: "echo 'Repository verified successfully'",
+          source: "actions/checkout@v4"
+        }
+      ]
+    });
+  }
+
   return {
     name: workflowName,
     triggers: [

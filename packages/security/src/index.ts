@@ -1,5 +1,5 @@
-﻿import type { ProjectState } from "@auto-gha/state";
-import type { SecurityLevel, GeneratedSecurityArtifacts } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { SecurityLevel, SecurityPolicyIR, GeneratedSecurityArtifacts } from "./types.js";
 import { resolveSecurityPolicy } from "./resolver.js";
 import { compileDependabotYAML } from "./compilers/dependabot.js";
 import { compileCodeQLYAML } from "./compilers/codeql.js";
@@ -13,13 +13,10 @@ export * from "./compilers/codeql.js";
 export * from "./compilers/audit.js";
 export * from "./compilers/code-scanning.js";
 
-export function compileSecurityPolicy(
-  state: ProjectState,
-  level: SecurityLevel = "standard"
+export function compileSecurityArtifacts(
+  policy: SecurityPolicyIR
 ): GeneratedSecurityArtifacts {
-  const policy = resolveSecurityPolicy(state, level);
-
-  if (level === "none") {
+  if (policy.level === "none") {
     return { policy };
   }
 
@@ -35,5 +32,13 @@ export function compileSecurityPolicy(
     securityWorkflowYaml: securityWorkflowYaml || undefined,
     codeScanningYaml: codeScanningYaml || undefined
   };
+}
+
+export function compileSecurityPolicy(
+  state: ProjectState,
+  level: SecurityLevel = "standard"
+): GeneratedSecurityArtifacts {
+  const policy = resolveSecurityPolicy(state, level);
+  return compileSecurityArtifacts(policy);
 }
 

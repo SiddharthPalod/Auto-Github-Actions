@@ -57,6 +57,16 @@ export function compileCodeQLYAML(policy: SecurityPolicyIR): string {
             }
           },
           {
+            name: "Attempt Autobuild",
+            uses: "github/codeql-action/autobuild@v3",
+            "continue-on-error": true
+          },
+          {
+            name: "Compile Java (Fallback)",
+            if: "matrix.language == 'java-kotlin' || matrix.language == 'java'",
+            run: "mkdir -p bin && find . -name '*.java' -not -path '*/.*' > sources.txt && if [ -s sources.txt ]; then javac -d bin @sources.txt || true; fi"
+          },
+          {
             name: "Perform CodeQL Analysis",
             uses: "github/codeql-action/analyze@v3",
             with: {

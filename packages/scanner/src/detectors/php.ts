@@ -16,6 +16,15 @@ export const phpDetector: Detector = {
         name: "composer",
         evidence: composerFiles.map(file => ({ source: file, value: "composer.json" }))
       });
+    } else {
+      const phpFiles = context.findFiles(f => f.endsWith(".php"));
+      if (phpFiles.length > 0) {
+        state.runtime.push({
+          name: "php",
+          version: "8.2",
+          evidence: phpFiles.slice(0, 5).map(file => ({ source: file, value: "PHP source file (.php)" }))
+        });
+      }
     }
 
     if (context.findFiles(f => f.endsWith("artisan")).length > 0) {

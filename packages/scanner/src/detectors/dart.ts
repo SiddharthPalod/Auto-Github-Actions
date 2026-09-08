@@ -16,6 +16,15 @@ export const dartDetector: Detector = {
         name: "pub",
         evidence: pubspecFiles.map(file => ({ source: file, value: "pubspec.yaml" }))
       });
+    } else {
+      const dartFiles = context.findFiles(f => f.endsWith(".dart"));
+      if (dartFiles.length > 0) {
+        state.runtime.push({
+          name: "dart",
+          version: "stable",
+          evidence: dartFiles.slice(0, 5).map(file => ({ source: file, value: "Dart source file (.dart)" }))
+        });
+      }
     }
   }
 };

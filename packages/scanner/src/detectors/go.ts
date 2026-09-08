@@ -20,5 +20,16 @@ export const goDetector: Detector = {
         evidence: [{ source: file, value: version ? `go ${version}` : "go.mod detected" }]
       });
     }
+
+    if (goModFiles.length === 0) {
+      const goFiles = context.findFiles(f => f.endsWith(".go"));
+      if (goFiles.length > 0) {
+        state.runtime.push({
+          name: "go",
+          version: "1.22",
+          evidence: goFiles.slice(0, 5).map(file => ({ source: file, value: "Go source file (.go)" }))
+        });
+      }
+    }
   }
 };

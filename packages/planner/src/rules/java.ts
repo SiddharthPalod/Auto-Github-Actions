@@ -33,13 +33,20 @@ export const javaRule: Rule = {
         reason: "Build and test with Gradle.",
         sourceRule: "java-ci"
       });
-    } else {
-      // Default to Maven
+    } else if (isMaven) {
       actions.push({
         id: "maven-build",
         type: "java.build",
         inputs: { tool: "maven" },
         reason: "Build and test with Maven.",
+        sourceRule: "java-ci"
+      });
+    } else {
+      actions.push({
+        id: "javac-build",
+        type: "java.build",
+        inputs: { tool: "javac" },
+        reason: "Compile standalone Java files with javac.",
         sourceRule: "java-ci"
       });
     }

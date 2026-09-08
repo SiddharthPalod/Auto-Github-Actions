@@ -34,5 +34,17 @@ export const javaDetector: Detector = {
         evidence: gradleFiles.map(file => ({ source: file, value: "build.gradle" }))
       });
     }
+
+    // 3. Standalone / Raw Java source files (.java)
+    if (!state.runtime.some(r => r.name === "java")) {
+      const javaFiles = context.findFiles(f => f.endsWith(".java"));
+      if (javaFiles.length > 0) {
+        state.runtime.push({
+          name: "java",
+          version: "17",
+          evidence: javaFiles.slice(0, 5).map(file => ({ source: file, value: "Java source file (.java)" }))
+        });
+      }
+    }
   }
 };

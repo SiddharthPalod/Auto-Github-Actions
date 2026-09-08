@@ -19,5 +19,15 @@ export const rustDetector: Detector = {
         evidence: [{ source: "Cargo.lock", value: "lockfile detected" }]
       });
     }
+
+    if (cargoFiles.length === 0) {
+      const rsFiles = context.findFiles(f => f.endsWith(".rs"));
+      if (rsFiles.length > 0) {
+        state.runtime.push({
+          name: "rust",
+          evidence: rsFiles.slice(0, 5).map(file => ({ source: file, value: "Rust source file (.rs)" }))
+        });
+      }
+    }
   }
 };

@@ -79,5 +79,20 @@ export const nodeDetector: Detector = {
         }
       }
     }
+
+    if (packageFiles.length === 0) {
+      const jsTsFiles = context.findFiles(f => f.endsWith(".js") || f.endsWith(".ts") || f.endsWith(".jsx") || f.endsWith(".tsx") || f.endsWith(".mjs") || f.endsWith(".cjs"));
+      if (jsTsFiles.length > 0) {
+        state.runtime.push({
+          name: "node",
+          version: "20.x",
+          evidence: jsTsFiles.slice(0, 5).map(file => ({ source: file, value: "JavaScript/TypeScript source file" }))
+        });
+        state.packageManager.push({
+          name: "npm",
+          evidence: jsTsFiles.slice(0, 1).map(file => ({ source: file, value: "Default npm package manager" }))
+        });
+      }
+    }
   }
 };
