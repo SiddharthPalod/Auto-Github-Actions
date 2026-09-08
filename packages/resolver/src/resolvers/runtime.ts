@@ -288,8 +288,8 @@ export function resolveJavaBuild(action: PlannedAction): ResolvedPrimitive[] {
       },
       {
         kind: "run",
-        run: "if [ -f gradlew ]; then ./gradlew build; else gradle build; fi",
-        reason: "Execute Gradle build and tests.",
+        run: "if [ -f gradlew ]; then chmod +x ./gradlew && ./gradlew build; elif [ -f build.gradle ] || [ -f build.gradle.kts ] || [ -f settings.gradle ] || [ -f settings.gradle.kts ]; then gradle build; else for dir in $(find . -maxdepth 5 \\( -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'settings.gradle' -o -name 'settings.gradle.kts' \\) -not -path '*/.*' -not -path '*/build/*' -exec dirname {} \\; | sort -u); do (cd \"$dir\" && echo \"Building Gradle project in $dir...\" && if [ -f ./gradlew ]; then chmod +x ./gradlew && ./gradlew build; elif [ -f ../gradlew ]; then chmod +x ../gradlew && ../gradlew build; elif [ -f ../../gradlew ]; then chmod +x ../../gradlew && ../../gradlew build; else gradle build; fi); done; fi",
+        reason: "Execute Gradle build and tests across root or nested subprojects.",
         source: `actions/starter-workflows:${template.id}`,
         actionId: action.id
       }
@@ -326,7 +326,7 @@ export function resolveDotnetBuild(action: PlannedAction): ResolvedPrimitive[] {
   return [
     {
       kind: "run",
-      run: "dotnet restore && dotnet build --no-restore",
+      run: "if ls *.sln 1> /dev/null 2>&1 || ls *.csproj 1> /dev/null 2>&1 || ls *.fsproj 1> /dev/null 2>&1; then dotnet restore && dotnet build --no-restore; else for proj in $(find . -maxdepth 5 \\( -name '*.sln' -o -name '*.csproj' -o -name '*.fsproj' \\) -not -path '*/.*' -not -path '*/bin/*' -not -path '*/obj/*' | sort -u); do echo \"Building $proj...\" && dotnet restore \"$proj\" && dotnet build \"$proj\" --no-restore; done; fi",
       reason: "Restore and build .NET solution from starter workflow.",
       source: `actions/starter-workflows:${template.id}`,
       actionId: action.id
@@ -339,7 +339,7 @@ export function resolveDotnetTest(action: PlannedAction): ResolvedPrimitive[] {
   return [
     {
       kind: "run",
-      run: "dotnet test --no-build --verbosity normal",
+      run: "if ls *.sln 1> /dev/null 2>&1 || ls *Test*.csproj 1> /dev/null 2>&1 || ls *test*.csproj 1> /dev/null 2>&1; then dotnet test --no-build --verbosity normal || dotnet test --verbosity normal; else for proj in $(find . -maxdepth 5 \\( -name '*.sln' -o -name '*Test*.csproj' -o -name '*test*.csproj' \\) -not -path '*/.*' -not -path '*/bin/*' -not -path '*/obj/*' | sort -u); do echo \"Testing $proj...\" && dotnet test \"$proj\" --verbosity normal; done; fi",
       reason: "Run .NET unit tests from starter workflow.",
       source: `actions/starter-workflows:${template.id}`,
       actionId: action.id
@@ -404,8 +404,8 @@ export function resolveCppBuild(action: PlannedAction): ResolvedPrimitive[] {
   return [
     {
       kind: "run",
-      run: "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release",
-      reason: "Configure and compile C/C++ CMake project.",
+      run: "if [ -f CMakeLists.txt ]; then cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release; else for cmake_file in $(find . -maxdepth 4 -name 'CMakeLists.txt' -not -path '*/.*' -not -path '*/build/*'); do dir=\"$(dirname \"$cmake_file\")\"; (cd \"$dir\" && echo \"Building CMake project in $dir...\" && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release); done; fi",
+      reason: "Configure and compile C/C++ CMake project across root and nested subprojects.",
       source: `actions/starter-workflows:${template.id}`,
       actionId: action.id
     }
