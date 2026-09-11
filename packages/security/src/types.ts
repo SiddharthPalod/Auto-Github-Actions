@@ -51,7 +51,16 @@ export type CodeScanningScanner =
   | "scorecard"
   | "dependency-review"
   | "osv-scanner"
-  | "syft";
+  | "syft"
+  | "anchore"
+  | "checkmarx"
+  | "veracode"
+  | "stackhawk"
+  | "sysdig"
+  | "synopsys"
+  | "zscaler-iac"
+  | "xanitizer";
+
 
 export type CodeScanningTargetConfig = {
   tool: CodeScanningScanner;

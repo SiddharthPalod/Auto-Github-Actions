@@ -1,6 +1,22 @@
-import type { Rule } from "../types.js";
-import { findCapability, formatEvidence, noMatch } from "./helpers.js";
+import type { Rule, ResolvedCapability, CapabilityId, RuleResult } from "../types.js";
 import { ALL_PLUGINS, type AutoGhaPlugin } from "@auto-gha/registry";
+
+// Inlined from deleted helpers.ts
+function findCapability(capabilities: readonly ResolvedCapability[], id: CapabilityId): ResolvedCapability | undefined {
+  return capabilities.find(c => c.id === id);
+}
+function formatEvidence(...capabilities: (ResolvedCapability | undefined)[]): string[] {
+  const lines: string[] = [];
+  for (const cap of capabilities) {
+    if (!cap) continue;
+    for (const ev of cap.evidence) lines.push(`${ev.source}: ${ev.reason}`);
+  }
+  return lines;
+}
+function noMatch(): RuleResult {
+  return { matched: false, actions: [], reasons: [] };
+}
+
 
 const RULE_ID_MAP: Record<string, string> = {
   node: "node-setup",
@@ -22,7 +38,23 @@ const RULE_ID_MAP: Record<string, string> = {
   azure: "deploy-azure",
   kubernetes: "deploy-k8s",
   terraform: "deploy-terraform",
-  ghcr: "deploy-ghcr"
+  ghcr: "deploy-ghcr",
+  ibm: "deploy-ibm",
+  openshift: "deploy-openshift",
+  tencent: "deploy-tencent",
+  octopusdeploy: "deploy-octopus",
+  scala: "scala-ci",
+  r: "r-ci",
+  symfony: "symfony-ci",
+  webpack: "webpack-build",
+  "super-linter": "super-linter"
+};
+
+const TESTING_FRAMEWORK_MAP: Record<string, { ruleId: string; type: "test.unit" | "test.e2e"; label: string }> = {
+  jest:       { ruleId: "jest-test",       type: "test.unit", label: "Jest" },
+  vitest:     { ruleId: "vitest-test",     type: "test.unit", label: "Vitest" },
+  playwright: { ruleId: "playwright-test", type: "test.e2e",  label: "Playwright" },
+  cypress:    { ruleId: "cypress-test",    type: "test.e2e",  label: "Cypress" },
 };
 
 export function generateRulesFromPlugins(): Rule[] {
@@ -35,11 +67,40 @@ export function generateRulesFromPlugins(): Rule[] {
       rules.push(createInfrastructureRule(plugin));
     } else if (plugin.type === "deployment") {
       rules.push(createDeploymentRule(plugin));
+    } else if (plugin.type === "framework") {
+      rules.push(createFrameworkRule(plugin));
+    } else if (plugin.type === "tool") {
+      rules.push(createToolRule(plugin));
     }
+  }
+
+
+  // Testing framework rules — data-driven from state.testing[], replaces deleted testing.ts
+  for (const [framework, config] of Object.entries(TESTING_FRAMEWORK_MAP)) {
+    rules.push({
+      id: config.ruleId,
+      description: `Run ${config.label} tests when ${config.label} is detected.`,
+      evaluate(state, _capabilities) {
+        const found = state.testing.find(t => t.name === framework);
+        if (!found) return noMatch();
+        return {
+          matched: true,
+          actions: [{
+            id: config.ruleId,
+            type: config.type,
+            inputs: { framework },
+            reason: `${config.label} testing framework detected.`,
+            sourceRule: config.ruleId
+          }],
+          reasons: [`${config.label} testing framework detected.`]
+        };
+      }
+    });
   }
 
   return rules;
 }
+
 
 function createLanguageRule(plugin: AutoGhaPlugin): Rule {
   const ruleId = RULE_ID_MAP[plugin.id] ?? `${plugin.id}-rule`;
@@ -400,7 +461,138 @@ function createDeploymentRule(plugin: AutoGhaPlugin): Rule {
           reasons: ["Docker infrastructure detected.", ...formatEvidence(dockerCap)]
         };
       }
+      if (plugin.id === "ibm") {
+        const ibmCap = findCapability(capabilities, "infra.ibm");
+        if (!ibmCap) return noMatch();
+        return {
+          matched: true,
+          actions: [
+            {
+              id: "deploy-ibm-iks",
+              type: "deploy.ibm",
+              reason: "IBM Cloud deployment markers detected.",
+              sourceRule: "deploy-ibm"
+            }
+          ],
+          reasons: ["IBM Cloud infrastructure detected.", ...formatEvidence(ibmCap)]
+        };
+      }
+      if (plugin.id === "openshift") {
+        const ocCap = findCapability(capabilities, "infra.openshift");
+        if (!ocCap) return noMatch();
+        return {
+          matched: true,
+          actions: [
+            {
+              id: "deploy-openshift-app",
+              type: "deploy.openshift",
+              reason: "OpenShift deployment markers detected.",
+              sourceRule: "deploy-openshift"
+            }
+          ],
+          reasons: ["OpenShift infrastructure detected.", ...formatEvidence(ocCap)]
+        };
+      }
+      if (plugin.id === "tencent") {
+        const tcCap = findCapability(capabilities, "infra.tencent");
+        if (!tcCap) return noMatch();
+        return {
+          matched: true,
+          actions: [
+            {
+              id: "deploy-tencent-tke",
+              type: "deploy.tencent",
+              reason: "Tencent Cloud deployment markers detected.",
+              sourceRule: "deploy-tencent"
+            }
+          ],
+          reasons: ["Tencent Cloud infrastructure detected.", ...formatEvidence(tcCap)]
+        };
+      }
+      if (plugin.id === "octopusdeploy") {
+        const octoCap = findCapability(capabilities, "infra.octopusdeploy");
+        if (!octoCap) return noMatch();
+        return {
+          matched: true,
+          actions: [
+            {
+              id: "deploy-octopus-release",
+              type: "deploy.octopus",
+              reason: "Octopus Deploy configuration detected.",
+              sourceRule: "deploy-octopus"
+            }
+          ],
+          reasons: ["Octopus Deploy infrastructure detected.", ...formatEvidence(octoCap)]
+        };
+      }
       return noMatch();
     }
   };
 }
+
+function createFrameworkRule(plugin: AutoGhaPlugin): Rule {
+  const ruleId = RULE_ID_MAP[plugin.id] ?? `${plugin.id}-ci`;
+
+  return {
+    id: ruleId,
+    description: `Configure ${plugin.name} execution when ${plugin.name} framework is detected.`,
+    evaluate(_state, capabilities) {
+      const cap = findCapability(capabilities, `framework.${plugin.id}` as any);
+      if (!cap) return noMatch();
+
+      const actions: any[] = [];
+      if (plugin.provides.includes("test")) {
+        actions.push({
+          id: `${plugin.id}-test`,
+          type: `${plugin.id}.test`,
+          reason: `Execute ${plugin.name} test suite.`,
+          sourceRule: ruleId
+        });
+      }
+
+      return {
+        matched: true,
+        actions,
+        reasons: [`${plugin.name} framework detected.`, ...formatEvidence(cap)]
+      };
+    }
+  };
+}
+
+function createToolRule(plugin: AutoGhaPlugin): Rule {
+  const ruleId = RULE_ID_MAP[plugin.id] ?? `${plugin.id}-tool`;
+
+  return {
+    id: ruleId,
+    description: `Configure ${plugin.name} execution when ${plugin.name} tooling is detected.`,
+    evaluate(_state, capabilities) {
+      const cap = findCapability(capabilities, `tool.${plugin.id}` as any);
+      if (!cap) return noMatch();
+
+      const actions: any[] = [];
+      if (plugin.provides.includes("build")) {
+        actions.push({
+          id: `${plugin.id}-build`,
+          type: `${plugin.id}.build`,
+          reason: `Execute ${plugin.name} build.`,
+          sourceRule: ruleId
+        });
+      }
+      if (plugin.provides.includes("lint")) {
+        actions.push({
+          id: `${plugin.id}-lint`,
+          type: "tool.lint",
+          reason: `Execute ${plugin.name} linting.`,
+          sourceRule: ruleId
+        });
+      }
+
+      return {
+        matched: true,
+        actions,
+        reasons: [`${plugin.name} tooling detected.`, ...formatEvidence(cap)]
+      };
+    }
+  };
+}
+

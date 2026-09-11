@@ -203,6 +203,11 @@ The engine automatically discovers project manifests across root and subdirector
 | **C / C++ (CMake)** | `ci/cmake-single-platform.yml` | `CMakeLists.txt`, `Makefile` | CMake Build & CTest | `test-cpp` | Compiler cache |
 | **Deno** | `ci/deno.yml` | `deno.json`, `deno.jsonc`, `deno.lock` | `denoland/setup-deno@v2` | `test-deno` | Deno cache |
 | **Swift** | `ci/swift.yml` | `Package.swift` | Swift Package Manager | `test-swift` | SPM build cache |
+| **Scala / SBT** | `ci/scala.yml` | `build.sbt`, `project/plugins.sbt`, `project/build.properties` | `actions/setup-java@v4` (Temurin), `sbt test` | `scala-ci` | SBT dependency caching |
+| **R Language** | `ci/r.yml` | `DESCRIPTION`, `renv.lock`, `NAMESPACE` | `r-lib/actions/setup-r@v2`, `devtools::test()` | `r-ci` | R package & renv cache |
+| **Symfony (PHP)** | `ci/symfony.yml` | `symfony.lock`, `composer.json` | `shivammathur/setup-php@v2`, `phpunit` | `symfony-ci` | Composer cache |
+| **Webpack** | `ci/webpack.yml` | `webpack.config.js`, `webpack.config.ts`, `webpack.config.mjs` | `npx webpack --mode production` | `webpack-build` | Node module cache |
+| **Super-Linter** | `ci/super-linter.yml` | `.github/super-linter.env`, `.github/linters` | `super-linter/super-linter@v7` | `super-linter` | — |
 | **Docker Containers** | `ci/docker-image.yml` | `Dockerfile`, `docker-compose.yml` | `docker/setup-buildx-action@v3` | `build-docker` | Buildx layer caching |
 
 ---
@@ -223,7 +228,14 @@ The engine configures specialized static analysis (SAST), infrastructure securit
 | **Dependency Review** | PR Dependency Gating | Any repo on PR | `actions/dependency-review-action@v4` | **Standard** | PR comment + High/Critical blocker |
 | **Google OSV-Scanner** | Open Source Vulnerabilities | Lockfiles detected | `google/osv-scanner-action@v1.9.0` | **Standard** | `osv-results.sarif` $\rightarrow$ Security Tab |
 | **OpenSSF Scorecard** | Supply Chain Assurance | Public / Enterprise repo | `ossf/scorecard-action@v2.4.0` | **Strict** | `scorecard.sarif` $\rightarrow$ Security Tab |
-| **Trivy Image Scan** | Container Vulnerabilities | `Dockerfile` detected | `aquasecurity/trivy-action@master` | **Standard** | Table summary / SARIF upload |
+| **Anchore Grype** | Vulnerability Scanner | Containers & Workspaces | `anchore/scan-action@v4` | **Strict** | `results.sarif` $\rightarrow$ Security Tab |
+| **Checkmarx AST** | Enterprise SAST | Codebase scanning | `checkmarx/ast-github-action@main` | **Standard** | `checkmarx.sarif` $\rightarrow$ Security Tab |
+| **Veracode** | Enterprise Static Scan | Codebase scanning | `veracode/veracode-uploadandscan-action@0.2.6` | **Standard** | Veracode Analytics |
+| **StackHawk DAST** | Dynamic API Security | `stackhawk.yml` detected | `stackhawk/hawkscan-action@v2` | **Standard** | StackHawk Dashboard |
+| **Sysdig Secure** | Container Security | Dockerfile detected | `sysdiglabs/scan-action@v3` | **Standard** | `sysdig.sarif` $\rightarrow$ Security Tab |
+| **Synopsys Black Duck** | Software Composition | Lockfiles detected | `synopsys-sig/synopsys-action@v1.9.0` | **Standard** | Black Duck Dashboard |
+| **Zscaler IaC** | IaC Security | Terraform / Cloud manifests | `ZscalerCWP/Zscaler-IaC-Action@v1` | **Standard** | `zscaler-results.sarif` $\rightarrow$ Security Tab |
+| **Xanitizer SAST** | Java / Kotlin SAST | Java / JVM detected | `RIGS-IT/xanitizer-action@v2` | **Standard** | `xanitizer.sarif` $\rightarrow$ Security Tab |
 | **Native Audits** | Lockfile CVE Audits | npm, pip, cargo, go | `npm audit`, `pip-audit`, `cargo-audit`, `govulncheck` | **Minimal** | Console logs / Blocking in Strict |
 | **Harden-Runner** | Network & Egress Security | All CI/CD jobs | `step-security/harden-runner@v2` | **Strict** | StepSecurity Insights Dashboard |
 | **Gitleaks** | Secret & Key Leak Detection | Git history | `gitleaks/gitleaks-action@v2` | **Strict** | Blocks PR on secret detection |
@@ -242,6 +254,19 @@ The engine configures downstream, environment-guarded Continuous Deployment (CD)
 | **Kubernetes (Helm / K8s)** | `deployments/azure-kubernetes-service-helm.yml` | `Chart.yaml`, `values.yaml`, `k8s/`, `manifests/` | `azure/setup-helm@v4.2.0`, `helm upgrade --install` | `deploy-k8s` | `environment: production`<br>`if: branch == main` |
 | **Terraform Apply (IaC)** | `deployments/terraform.yml` | `*.tf`, `*.tfvars`, `terragrunt.hcl` | `hashicorp/setup-terraform@v3`, `terraform apply` | `deploy-terraform` | `environment: production`<br>`if: branch == main` |
 | **GHCR Container Registry** | `deployments/docker-publish.yml` | `Dockerfile` detected with release policy | `docker/login-action@v3`, `docker/build-push-action@v6` | `deploy-ghcr` | `if: branch == main` |
+| **IBM Cloud (IKS)** | `deployments/ibm.yml` | `ibm-cloud.yml`, `.bluemix/pipeline.yml` | `IBM/actions-ibmcloud-cli@v1`, `kubectl apply` | `deploy-ibm` | `if: branch == main` |
+| **Red Hat OpenShift** | `deployments/openshift.yml` | `.openshift/`, `openshift/*.yml` | `redhat-actions/openshift-tools-installer@v1`, `oc rollout` | `deploy-openshift` | `if: branch == main` |
+| **Tencent Cloud (TKE)** | `deployments/tencent.yml` | `tke-service.json`, `tencentcloud.yaml` | `tencentcloud-actions/setup-tccli@v1`, `kubectl apply` | `deploy-tencent` | `if: branch == main` |
+| **Octopus Deploy** | `deployments/octopusdeploy.yml` | `.octopus/`, `octopus.json` | `OctopusDeploy/push-package-action@v3`, `create-release-action@v3` | `deploy-octopus` | `if: branch == main` |
+
+---
+
+## 🛠️ Extending the Engine (Developer Guide)
+
+- **Adding support for a new language, tool, or framework**: Create a single vertical plugin in `packages/registry/src/plugins/<name>.ts` implementing `AutoGhaPlugin` (defining `detection`, `provides`, and strongly-typed `StepIR` AST `resolvers`), and register it in `packages/registry/src/index.ts`. The `@auto-gha/scanner`, `@auto-gha/planner`, and `@auto-gha/resolver` engines automatically discover and orchestrate it without modifying engine internals.
+- **Adding new Cloud / Deployment targets** (e.g., Vercel, Fly.io, Netlify, Cloudflare): Create a plugin in `packages/registry/src/plugins/<target>.ts` with `type: 'deployment'`, detection manifests, and a `deploy: (ctx) => StepIR[]` AST resolver. The planner automatically wires the DAG dependency ensuring `deploy` only runs after all tests pass.
+- **Adding a new security linter or scanner**: Create a single scanner plugin in `packages/security/src/scanners/<scanner>.ts` implementing `ScannerPlugin` and register it in `packages/security/src/scanners/index.ts`. The compiler automatically executes it via a data-driven loop with zero switch statements.
+- **Adding AST Optimizations** (e.g., custom caching rules, concurrency, or artifact handling): Write a new optimization pass in `packages/compiler/src/passes/` to inspect or mutate the strongly-typed `WorkflowIR` AST before YAML serialization.
 
 ---
 

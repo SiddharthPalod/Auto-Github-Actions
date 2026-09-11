@@ -1,4 +1,4 @@
-﻿import type { ProjectState } from "@auto-gha/state";
+import type { ProjectState } from "@auto-gha/state";
 
 export type CapabilityId =
   | "runtime.node"
@@ -14,6 +14,8 @@ export type CapabilityId =
   | "runtime.cpp"
   | "runtime.deno"
   | "runtime.swift"
+  | "runtime.scala"
+  | "runtime.r"
 
   | "package.npm"
   | "package.pnpm"
@@ -44,6 +46,8 @@ export type CapabilityId =
   | "tool.typescript"
   | "tool.eslint"
   | "tool.prettier"
+  | "tool.webpack"
+  | "tool.super-linter"
 
   | "infra.docker"
   | "infra.docker-compose"
@@ -52,7 +56,11 @@ export type CapabilityId =
   | "infra.azure"
   | "infra.kubernetes"
   | "infra.terraform"
-  | "infra.ghcr";
+  | "infra.ghcr"
+  | "infra.ibm"
+  | "infra.openshift"
+  | "infra.tencent"
+  | "infra.octopusdeploy";
 
 export type ResolvedCapability = {
   id: CapabilityId;
@@ -89,13 +97,24 @@ export type ActionType =
   | "deno.test"
   | "swift.build"
   | "swift.test"
+  | "scala.build"
+  | "scala.test"
+  | "r.test"
+  | "symfony.test"
+  | "webpack.build"
+  | "tool.lint"
   | "docker.build"
   | "deploy.aws"
   | "deploy.gcp"
   | "deploy.azure"
   | "deploy.kubernetes"
   | "deploy.terraform"
-  | "deploy.ghcr";
+  | "deploy.ghcr"
+  | "deploy.ibm"
+  | "deploy.openshift"
+  | "deploy.tencent"
+  | "deploy.octopus";
+
 
 export type PlannedAction = {
   id: string;

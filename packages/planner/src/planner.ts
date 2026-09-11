@@ -2,14 +2,11 @@ import type { ProjectState } from "@auto-gha/state";
 import type { Rule, WorkflowPlan, PlannedAction } from "./types.js";
 import { resolveCapabilities } from "./capabilities.js";
 import { generateRulesFromPlugins } from "./rules/plugin-rules.js";
-import { jestRule, vitestRule, playwrightRule } from "./rules/testing.js";
-
-const testingRules: Rule[] = [jestRule, vitestRule, playwrightRule];
 
 export function planWorkflow(state: ProjectState): WorkflowPlan {
   const capabilities = resolveCapabilities(state);
-  const pluginRules = generateRulesFromPlugins();
-  const rules = [...pluginRules, ...testingRules];
+  const rules: Rule[] = generateRulesFromPlugins();
+
 
   const actions: PlannedAction[] = [];
   const matchedRules: string[] = [];

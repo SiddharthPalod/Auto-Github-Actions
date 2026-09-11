@@ -1,15 +1,15 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { resolvePlan, resolveAction } from "./resolver.js";
-import { STARTER_WORKFLOWS_CATALOG } from "./catalog/starter-workflows.js";
+import { getPlugin } from "@auto-gha/registry";
 import type { WorkflowPlan } from "@auto-gha/planner";
 
-describe("Phase 3B - Starter Workflow Knowledge Ingestion & Resolver", () => {
-  it("contains normalized starter workflows in catalog", () => {
-    expect(STARTER_WORKFLOWS_CATALOG["ci/node.js.yml"]).toBeDefined();
-    expect(STARTER_WORKFLOWS_CATALOG["ci/go.yml"]).toBeDefined();
-    expect(STARTER_WORKFLOWS_CATALOG["ci/python-app.yml"]).toBeDefined();
-    expect(STARTER_WORKFLOWS_CATALOG["ci/docker-image.yml"]).toBeDefined();
-    expect(STARTER_WORKFLOWS_CATALOG["ci/rust.yml"]).toBeDefined();
+describe("Resolver — Plugin Registry Integration", () => {
+  it("plugin registry contains all core ecosystems", () => {
+    expect(getPlugin("node")).toBeDefined();
+    expect(getPlugin("go")).toBeDefined();
+    expect(getPlugin("python")).toBeDefined();
+    expect(getPlugin("docker")).toBeDefined();
+    expect(getPlugin("rust")).toBeDefined();
   });
 
   it("resolves node setup with starter workflow provenance", () => {

@@ -11,7 +11,9 @@ export type RuntimeName =
   | "elixir"
   | "cpp"
   | "deno"
-  | "swift";
+  | "swift"
+  | "scala"
+  | "r";
 
 export type PackageManagerName =
   | "npm"
@@ -38,7 +40,12 @@ export type InfrastructureName =
   | "gcp"
   | "azure"
   | "ghcr"
-  | "helm";
+  | "helm"
+  | "ibm"
+  | "openshift"
+  | "tencent"
+  | "octopusdeploy";
+
 
 export type Evidence = {
   source: string;

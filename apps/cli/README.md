@@ -37,12 +37,12 @@ npx auto-gha https://github.com/expressjs/express
 
 ## 🌟 Key Features
 
-- 🔍 **Universal Tech Detection**: Automatically identifies runtimes (Node, Python, Go, Rust, Java, C++, Ruby, PHP, .NET, Swift, Elixir), package managers (npm, pnpm, yarn, bun, pip, cargo, etc.), frameworks, and Docker infrastructure.
+- 🔍 **Universal Tech Detection**: Automatically identifies runtimes (Node, Python, Go, Rust, Java, C++, Ruby, PHP, .NET, Swift, Elixir, Scala, R, Symfony), package managers (npm, pnpm, yarn, bun, pip, cargo, maven, gradle, sbt, composer, renv), bundlers (Webpack), and cloud deployment infrastructure (Docker, Kubernetes, AWS, GCP, Azure, Terraform, GHCR, IBM Cloud, OpenShift, Tencent Cloud, Octopus Deploy).
 - ⚡ **Optimized CI/CD Pipelines**: Builds parallel execution graphs (DAGs) with native dependency caching, 15-minute job timeouts, and concurrency cancellations.
 - 🛡️ **Multi-Tier Security Policies**:
   - **CodeQL SAST**: Automated static application security testing for supported languages.
   - **Dependabot**: Automatic version and security update configs with PR grouping (`.github/dependabot.yml`).
-  - **Vulnerability Scans**: Native lockfile audits (`npm audit`, `cargo audit`, `pip-audit`, `govulncheck`), Trivy filesystem/manifest scanning, and Hadolint.
+  - **Vulnerability & SAST/DAST Scans**: Native lockfile audits (`npm audit`, `cargo audit`, `pip-audit`, `govulncheck`), Semgrep, Hadolint, tfsec, Bandit, Brakeman, OpenSSF Scorecard, Google OSV, Anchore Grype, Checkmarx, Veracode, StackHawk DAST, Sysdig, Synopsys, Zscaler IaC, and Xanitizer.
 - 🌿 **Git Integration**: Creates a local Git branch (`auto-gha/setup-ci-...`), commits the changes, and generates a 1-click Pull Request link.
 - 🔄 **Safe Workflow Reconciliation**: Merges with existing `.github/workflows/ci.yml` non-destructively, preserving your custom user steps.
 
@@ -84,8 +84,9 @@ pnpm -r test
 
 - **Adding support for a new language, tool, or framework**: Create a single vertical plugin in `packages/registry/src/plugins/<name>.ts` implementing `AutoGhaPlugin` (defining `detection`, `provides`, and strongly-typed `StepIR` AST `resolvers`), and register it in `packages/registry/src/index.ts`. The `@auto-gha/scanner`, `@auto-gha/planner`, and `@auto-gha/resolver` engines automatically discover and orchestrate it without modifying engine internals.
 - **Adding new Cloud / Deployment targets** (e.g., Vercel, Fly.io, Netlify, Cloudflare): Create a plugin in `packages/registry/src/plugins/<target>.ts` with `category: 'deployment'`, detection manifests, and a `deploy: (ctx) => StepIR[]` AST resolver. The planner automatically wires the DAG dependency ensuring `deploy` only runs after all tests pass.
-- **Adding a new security linter or scanner**: Extend `@auto-gha/security` by adding dedicated security compilers in `packages/security/src/compilers/` (for global SAST, secret, or container scanners), or add tool lint steps directly in the language plugin's `resolvers.lint` hook in `@auto-gha/registry`.
+- **Adding a new security linter or scanner**: Create a single scanner plugin in `packages/security/src/scanners/<scanner>.ts` implementing `ScannerPlugin` and register it in `packages/security/src/scanners/index.ts`. The compiler automatically executes it via a data-driven loop with zero switch statements.
 - **Adding AST Optimizations** (e.g., custom caching rules, concurrency, or artifact handling): Write a new optimization pass in `packages/compiler/src/passes/` to inspect or mutate the strongly-typed `WorkflowIR` AST before YAML serialization.
+
 
 ---
 

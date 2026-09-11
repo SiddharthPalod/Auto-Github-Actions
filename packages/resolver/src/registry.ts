@@ -327,6 +327,42 @@ export const resolverRegistry: Record<string, ResolverFunction> = {
     return toPrimitives(plugin?.resolvers.test ? plugin.resolvers.test(ctx) : [], action);
   },
 
+  "scala.build": (action: PlannedAction) => {
+    const plugin = getPlugin("scala");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.build ? plugin.resolvers.build(ctx) : [], action);
+  },
+
+  "scala.test": (action: PlannedAction) => {
+    const plugin = getPlugin("scala");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.test ? plugin.resolvers.test(ctx) : [], action);
+  },
+
+  "r.test": (action: PlannedAction) => {
+    const plugin = getPlugin("r");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.test ? plugin.resolvers.test(ctx) : [], action);
+  },
+
+  "symfony.test": (action: PlannedAction) => {
+    const plugin = getPlugin("symfony");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.test ? plugin.resolvers.test(ctx) : [], action);
+  },
+
+  "webpack.build": (action: PlannedAction) => {
+    const plugin = getPlugin("webpack");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.build ? plugin.resolvers.build(ctx) : [], action);
+  },
+
+  "tool.lint": (action: PlannedAction) => {
+    const plugin = getPlugin("super-linter");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.lint ? plugin.resolvers.lint(ctx) : [], action);
+  },
+
   // Deployment Resolvers
   "deploy.aws": (action: PlannedAction) => {
     const plugin = getPlugin("aws");
@@ -368,5 +404,30 @@ export const resolverRegistry: Record<string, ResolverFunction> = {
       });
     }
     return toPrimitives(plugin?.resolvers.deploy ? plugin.resolvers.deploy(ctx) : [], action);
+  },
+
+  "deploy.ibm": (action: PlannedAction) => {
+    const plugin = getPlugin("ibm");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.deploy ? plugin.resolvers.deploy(ctx) : [], action);
+  },
+
+  "deploy.openshift": (action: PlannedAction) => {
+    const plugin = getPlugin("openshift");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.deploy ? plugin.resolvers.deploy(ctx) : [], action);
+  },
+
+  "deploy.tencent": (action: PlannedAction) => {
+    const plugin = getPlugin("tencent");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.deploy ? plugin.resolvers.deploy(ctx) : [], action);
+  },
+
+  "deploy.octopus": (action: PlannedAction) => {
+    const plugin = getPlugin("octopusdeploy");
+    const ctx = createDummyContext(action);
+    return toPrimitives(plugin?.resolvers.deploy ? plugin.resolvers.deploy(ctx) : [], action);
   }
 };
+

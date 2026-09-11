@@ -236,9 +236,35 @@ export function resolveSecurityPolicy(
       failOnError: blockOnVulnerabilities,
       uploadSarif: true
     });
+
+    // Terraform & IaC Scanning (tfsec + Zscaler)
+    if (state.infrastructure.some(i => i.name === "terraform")) {
+      scanners.push({
+        tool: "tfsec",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+      scanners.push({
+        tool: "zscaler-iac",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
+
+    // Dynamic API Security Testing (StackHawk)
+    const hasStackhawk =
+      state.tooling.some(t => t.name === "stackhawk" || t.evidence.some(e => e.source.includes("stackhawk"))) ||
+      state.infrastructure.some(i => i.evidence.some(e => e.source.includes("stackhawk")));
+    if (hasStackhawk) {
+      scanners.push({
+        tool: "stackhawk",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: false
+      });
+    }
   }
 
-  // Strict Mode: Add Universal SAST (Semgrep) and Supply Chain (Scorecard)
+  // Strict Mode: Add Universal SAST (Semgrep), Supply Chain (Scorecard), and Anchore Grype
   if (level === "strict") {
     scanners.push({
       tool: "semgrep",
@@ -251,7 +277,16 @@ export function resolveSecurityPolicy(
       failOnError: false, // Scorecard reports supply chain posture without failing builds
       uploadSarif: true
     });
+
+    if (dockerfiles.length > 0) {
+      scanners.push({
+        tool: "anchore",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
   }
+
 
   // 5. Resolve Container Scanning
   const enableContainerScanning = (level === "standard" || level === "strict") && dockerfiles.length > 0;

@@ -36,7 +36,7 @@ export interface PluginResolvers {
 export interface AutoGhaPlugin {
   id: string;
   name: string;
-  type: "language" | "tool" | "deployment" | "testing" | "infrastructure";
+  type: "language" | "tool" | "deployment" | "testing" | "infrastructure" | "framework";
   detection: DetectionSpec;
   provides: string[];
   resolvers: PluginResolvers;

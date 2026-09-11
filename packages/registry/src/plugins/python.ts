@@ -47,7 +47,7 @@ export const pythonPlugin: AutoGhaPlugin = {
       }
     }
   },
-  provides: ["setup", "test"],
+  provides: ["setup", "test", "deploy"],
   resolvers: {
     setup(ctx: ResolverContext): StepIR[] {
       const pythonRuntime = ctx.state.runtime.find(r => r.name === "python");
@@ -77,6 +77,26 @@ export const pythonPlugin: AutoGhaPlugin = {
           kind: "run",
           run: "pytest || [ $? -eq 5 ]",
           source: "actions/starter-workflows:ci/python-app.yml"
+        }
+      ];
+    },
+    deploy(_ctx: ResolverContext): StepIR[] {
+      return [
+        {
+          kind: "uses",
+          uses: "actions/setup-python@v5",
+          with: { "python-version": "3.x" },
+          source: "actions/starter-workflows:ci/python-publish.yml"
+        },
+        {
+          kind: "run",
+          run: "python -m pip install --upgrade pip build && python -m build",
+          source: "actions/starter-workflows:ci/python-publish.yml"
+        },
+        {
+          kind: "uses",
+          uses: "pypa/gh-action-pypi-publish@release/v1",
+          source: "actions/starter-workflows:ci/python-publish.yml"
         }
       ];
     }

@@ -12,6 +12,8 @@ export * from "./compilers/dependabot.js";
 export * from "./compilers/codeql.js";
 export * from "./compilers/audit.js";
 export * from "./compilers/code-scanning.js";
+export * from "./scanners/index.js";
+
 
 export function compileSecurityArtifacts(
   policy: SecurityPolicyIR

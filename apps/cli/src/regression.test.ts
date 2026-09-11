@@ -7,6 +7,7 @@ import { planWorkflow } from "@auto-gha/planner";
 import { resolvePlan } from "@auto-gha/resolver";
 import { buildWorkflowIR, compileWorkflowYAML } from "@auto-gha/compiler";
 import { reconcileWorkflows } from "@auto-gha/reconciliation";
+import { compileSecurityPolicy } from "@auto-gha/security";
 
 describe("Regression Snapshot Test Harness", () => {
   let tempDir: string;
@@ -178,4 +179,95 @@ jobs:
     expect(plan.customStepsPreserved).toBeGreaterThanOrEqual(1);
     expect(plan.mergedIR.jobs[0].steps.some(s => s.name === "Custom Slack Notification")).toBe(true);
   });
+
+  it("Golden Snapshot: Scala with SBT", async () => {
+    const fixturePath = await createFixture("single-scala", {
+      "build.sbt": 'name := "scala-app"\nscalaVersion := "3.3.1"\n',
+      "src/main/scala/Main.scala": 'object Main extends App { println("hello") }'
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: R Package with renv", async () => {
+    const fixturePath = await createFixture("single-r", {
+      "DESCRIPTION": "Package: demoR\nTitle: Demo R Package\nVersion: 0.1.0\nType: Package\n",
+      "renv.lock": '{\n  "R": { "Version": "4.3.0" }\n}\n'
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Symfony PHP Framework", async () => {
+    const fixturePath = await createFixture("symfony-app", {
+      "composer.json": JSON.stringify({ name: "app/symfony", require: { "symfony/framework-bundle": "^7.0" } }),
+      "symfony.lock": "{}"
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Frontend with Webpack", async () => {
+    const fixturePath = await createFixture("webpack-app", {
+      "package.json": JSON.stringify({ name: "web-bundle" }),
+      "webpack.config.js": "module.exports = { mode: 'production' };"
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Cloud Deployment (IBM Cloud)", async () => {
+    const fixturePath = await createFixture("cloud-ibm", {
+      "ibm-cloud.yml": "version: 1\n",
+      ".bluemix/pipeline.yml": "stages:\n"
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Cloud Deployment (Red Hat OpenShift)", async () => {
+    const fixturePath = await createFixture("cloud-openshift", {
+      "openshift/release.yml": "apiVersion: template.openshift.io/v1\n"
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Cloud Deployment (Tencent Cloud TKE)", async () => {
+    const fixturePath = await createFixture("cloud-tencent", {
+      "tke-service.json": '{"ClusterId": "cls-12345"}'
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Cloud Deployment (Octopus Deploy)", async () => {
+    const fixturePath = await createFixture("cloud-octopus", {
+      "octopus.json": '{"Project": "MyProject"}'
+    });
+
+    const { yaml } = await runPipeline(fixturePath);
+    expect(yaml).toMatchSnapshot();
+  });
+
+  it("Golden Snapshot: Declarative Security Scanning Suite (Anchore, StackHawk, Zscaler)", async () => {
+    const fixturePath = await createFixture("security-suite", {
+      "Dockerfile": "FROM alpine:3.19\n",
+      "main.tf": 'provider "aws" {}\n',
+      "stackhawk.yml": "app:\n  applicationId: test\n"
+    });
+
+    const state = await scanRepository(fixturePath);
+    const { codeScanningYaml } = compileSecurityPolicy(state, "strict");
+    expect(codeScanningYaml).toBeDefined();
+    expect(codeScanningYaml).toMatchSnapshot();
+  });
 });
+

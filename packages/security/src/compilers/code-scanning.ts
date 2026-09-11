@@ -1,5 +1,6 @@
 import { stringify } from "yaml";
-import type { SecurityPolicyIR, CodeScanningTargetConfig } from "../types.js";
+import type { SecurityPolicyIR } from "../types.js";
+import { getScanner } from "../scanners/index.js";
 
 export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): string {
   if (!policy.codeScanning.enabled || policy.codeScanning.scanners.length === 0) {
@@ -9,7 +10,9 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
   const jobs: Record<string, unknown> = {};
 
   for (const scanner of policy.codeScanning.scanners) {
-    const jobKey = `scan-${scanner.tool}`;
+    const plugin = getScanner(scanner.tool);
+    if (!plugin) continue;
+
     const steps: Array<Record<string, unknown>> = [
       {
         name: "Checkout repository",
@@ -27,255 +30,17 @@ export function compileCodeScanningWorkflowYAML(policy: SecurityPolicyIR): strin
       });
     }
 
-    switch (scanner.tool) {
-      case "semgrep": {
-        steps.push(
-          {
-            name: "Run Semgrep SAST",
-            uses: "semgrep/semgrep-action@v1",
-            with: {
-              config: "auto",
-              generateSarif: "1"
-            },
-            "continue-on-error": true
-          },
-          {
-            name: "Upload Semgrep scan results",
-            if: "always() && hashFiles('semgrep.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "semgrep.sarif"
-            }
-          }
-        );
-        jobs["semgrep"] = {
-          name: "Semgrep SAST Analysis",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 15,
-          steps
-        };
-        break;
-      }
+    const scannerSteps = plugin.buildSteps(scanner);
+    steps.push(...scannerSteps);
 
-      case "hadolint": {
-        const target = scanner.targetPath ?? "Dockerfile";
-        steps.push(
-          {
-            name: "Lint Dockerfile with Hadolint",
-            uses: "hadolint/hadolint-action@v3.1.0",
-            with: {
-              dockerfile: target,
-              format: "sarif",
-              "output-file": "hadolint.sarif",
-              "no-fail": !scanner.failOnError
-            }
-          },
-          {
-            name: "Upload Hadolint scan results",
-            if: "always() && hashFiles('hadolint.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "hadolint.sarif"
-            }
-          }
-        );
-        jobs["hadolint"] = {
-          name: "Dockerfile Lint (Hadolint)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "tfsec": {
-        steps.push(
-          {
-            name: "Scan Terraform IaC with tfsec",
-            uses: "aquasecurity/tfsec-action@v1.0.3",
-            with: {
-              sarif_file: "tfsec.sarif",
-              "soft-fail": !scanner.failOnError
-            }
-          },
-          {
-            name: "Upload tfsec scan results",
-            if: "always() && hashFiles('tfsec.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "tfsec.sarif"
-            }
-          }
-        );
-        jobs["tfsec"] = {
-          name: "Terraform IaC Security (tfsec)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "bandit": {
-        steps.push(
-          {
-            name: "Set up Python",
-            uses: "actions/setup-python@v5",
-            with: { "python-version": "3.x" }
-          },
-          {
-            name: "Run Bandit Security Linter",
-            run: "pip install bandit && bandit -r . -f custom --msg-template '{abspath}:{line}: [{test_id}] {msg}' || true"
-          }
-        );
-        jobs["bandit"] = {
-          name: "Python Security Scan (Bandit)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "brakeman": {
-        steps.push(
-          {
-            name: "Set up Ruby",
-            uses: "ruby/setup-ruby@v1",
-            with: { "ruby-version": "3.2" }
-          },
-          {
-            name: "Run Brakeman",
-            uses: "brakeman/brakeman-action@v1",
-            with: {
-              sarif_file: "brakeman.sarif"
-            }
-          },
-          {
-            name: "Upload Brakeman scan results",
-            if: "always() && hashFiles('brakeman.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "brakeman.sarif"
-            }
-          }
-        );
-        jobs["brakeman"] = {
-          name: "Ruby / Rails Security Scan (Brakeman)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "dependency-review": {
-        steps.push({
-          name: "Dependency Review",
-          if: "github.event_name == 'pull_request'",
-          uses: "actions/dependency-review-action@v4",
-          with: {
-            "fail-on-severity": scanner.failOnError ? "high" : "critical"
-          },
-          "continue-on-error": true
-        });
-        jobs["dependency-review"] = {
-          name: "Dependency Review (PR)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "osv-scanner": {
-        steps.push(
-          {
-            name: "Run Google OSV-Scanner",
-            uses: "google/osv-scanner-action/osv-scanner-action@v1.9.0",
-            with: {
-              "scan-args": "--call-analysis=false --format=sarif --output=osv-results.sarif ."
-            },
-            "continue-on-error": true
-          },
-          {
-            name: "Upload OSV-Scanner results",
-            if: "always() && hashFiles('osv-results.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "osv-results.sarif"
-            }
-          }
-        );
-        jobs["osv-scanner"] = {
-          name: "Open Source Vulnerability Scan (Google OSV)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      case "scorecard": {
-        steps.push(
-          {
-            name: "Run OpenSSF Scorecard",
-            uses: "ossf/scorecard-action@v2.4.0",
-            with: {
-              results_file: "scorecard-results.sarif",
-              results_format: "sarif",
-              publish_results: false
-            }
-          },
-          {
-            name: "Upload Scorecard scan results",
-            if: "always() && hashFiles('scorecard-results.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "scorecard-results.sarif"
-            }
-          }
-        );
-        jobs["scorecard"] = {
-          name: "Supply Chain Security (OpenSSF Scorecard)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 15,
-          steps
-        };
-        break;
-      }
-
-      case "njsscan": {
-        steps.push(
-          {
-            name: "Run njsscan",
-            uses: "ajinabraham/njsscan-action@master",
-            with: {
-              args: ". --sarif --output njsscan.sarif"
-            }
-          },
-          {
-            name: "Upload njsscan scan results",
-            if: "always() && hashFiles('njsscan.sarif') != ''",
-            uses: "github/codeql-action/upload-sarif@v3",
-            with: {
-              sarif_file: "njsscan.sarif"
-            }
-          }
-        );
-        jobs["njsscan"] = {
-          name: "Node.js Static Analysis (njsscan)",
-          "runs-on": "ubuntu-latest",
-          "timeout-minutes": 10,
-          steps
-        };
-        break;
-      }
-
-      default:
-        break;
-    }
+    jobs[plugin.jobKey] = {
+      name: plugin.jobName,
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": plugin.timeoutMinutes,
+      steps
+    };
   }
+
 
   if (Object.keys(jobs).length === 0) {
     return "";
