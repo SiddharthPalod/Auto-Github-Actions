@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const semgrepScanner: ScannerPlugin = {
   id: "semgrep",
   name: "Semgrep SAST",
+  icon: "🧠",
+  description: "Universal multi-language static application security testing",
   jobKey: "semgrep",
   jobName: "Semgrep SAST Analysis",
   timeoutMinutes: 15,
+  isApplicable(_state: ProjectState) {
+    return true;
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

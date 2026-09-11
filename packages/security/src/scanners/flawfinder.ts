@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const flawfinderScanner: ScannerPlugin = {
   id: "flawfinder",
-  name: "Flawfinder",
+  name: "Flawfinder C/C++ SAST",
+  icon: "🛡️",
+  description: "C/C++ source code vulnerability scanning (CWE detection)",
   jobKey: "flawfinder",
   jobName: "C/C++ Security (Flawfinder)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.runtime.some(r => r.name === "cpp");
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

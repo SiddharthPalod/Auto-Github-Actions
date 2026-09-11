@@ -223,6 +223,51 @@ export function resolveSecurityPolicy(
       });
     }
 
+    // Rust Security & Linter (Clippy)
+    if (runtimes.includes("rust")) {
+      scanners.push({
+        tool: "clippy",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: false
+      });
+    }
+
+    // C / C++ SAST (Flawfinder)
+    if (runtimes.includes("cpp")) {
+      scanners.push({
+        tool: "flawfinder",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
+
+    // Elixir / Phoenix SAST (Sobelow)
+    if (runtimes.includes("elixir") || state.frameworks.some(f => f.name === "phoenix")) {
+      scanners.push({
+        tool: "sobelow",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
+
+    // Java / Kotlin / Scala SAST (Xanitizer)
+    if (runtimes.includes("java") || runtimes.includes("scala")) {
+      scanners.push({
+        tool: "xanitizer",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
+
+    // Kubernetes Security Analysis (Kubesec)
+    if (state.infrastructure.some(i => i.name === "kubernetes")) {
+      scanners.push({
+        tool: "kubesec",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+    }
+
     // PR Dependency Review
     scanners.push({
       tool: "dependency-review",
@@ -281,6 +326,11 @@ export function resolveSecurityPolicy(
     if (dockerfiles.length > 0) {
       scanners.push({
         tool: "anchore",
+        failOnError: blockOnVulnerabilities,
+        uploadSarif: true
+      });
+      scanners.push({
+        tool: "sysdig",
         failOnError: blockOnVulnerabilities,
         uploadSarif: true
       });

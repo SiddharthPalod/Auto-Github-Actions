@@ -10,8 +10,10 @@ import {
   compileSecurityPolicy,
   compileSecurityArtifacts,
   resolveSecurityPolicy,
+  ALL_SCANNERS,
   type SecurityLevel,
-  type SecurityPolicyIR
+  type SecurityPolicyIR,
+  type CodeScanningTargetConfig
 } from "@auto-gha/security";
 import { withRepository, isRemoteUrl } from "./git.js";
 
@@ -51,16 +53,47 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
 
       s.stop(pc.green("Repository analysis complete!"));
 
-      const capLines = plan.capabilities.map(c => {
-        const versionStr = c.version ? ` (${c.version})` : "";
-        return `  ${pc.cyan("✓")} ${c.id}${versionStr}`;
-      });
+      // Rich Discovered Architecture & Capabilities Summary Box
+      const summaryItems: string[] = [];
+
+      if (state.runtime.length > 0) {
+        const runtimes = state.runtime.map(r => pc.bold(pc.green(r.name))).join(", ");
+        summaryItems.push(`  ${pc.bold("Runtimes:")}      ${runtimes}`);
+      }
+
+      if (state.packageManager.length > 0) {
+        const pms = state.packageManager.map(p => pc.bold(pc.magenta(p.name))).join(", ");
+        summaryItems.push(`  ${pc.bold("Package Mgrs:")}  ${pms}`);
+      }
+
+      if (state.frameworks.length > 0) {
+        const frameworks = state.frameworks.map(f => pc.cyan(f.name)).join(", ");
+        summaryItems.push(`  ${pc.bold("Frameworks:")}   ${frameworks}`);
+      }
+
+      if (state.tooling && state.tooling.length > 0) {
+        const tools = state.tooling.map(t => pc.blue(t.name)).join(", ");
+        summaryItems.push(`  ${pc.bold("Tooling:")}       ${tools}`);
+      }
+
+      if (state.infrastructure.length > 0) {
+        const infra = state.infrastructure.map(i => pc.yellow(i.name)).join(", ");
+        summaryItems.push(`  ${pc.bold("Infrastructure:")} ${infra}`);
+      }
+
+      if (plan.actions.length > 0) {
+        summaryItems.push("");
+        summaryItems.push(pc.bold("  Planned Policy Actions:"));
+        for (const action of plan.actions) {
+          summaryItems.push(`    → ${pc.cyan(action.id)}: ${action.reason}`);
+        }
+      }
 
       note(
-        capLines.length > 0
-          ? capLines.join("\n")
+        summaryItems.length > 0
+          ? summaryItems.join("\n")
           : pc.yellow("  No recognized runtimes or test frameworks found."),
-        "Discovered Capabilities"
+        "Analyzed Architecture & Discovered Capabilities"
       );
 
       if (ir.jobs.length === 0) {
@@ -69,9 +102,27 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
       }
 
       const jobOptions = ir.jobs.map(job => {
-        const isDeploy = job.id.startsWith("deploy") || job.id.startsWith("publish");
-        const icon = isDeploy ? "🚀" : "🧪";
-        const category = isDeploy ? "CD Deployment" : "CI Pipeline";
+        const isDeploy = job.id.startsWith("deploy") || job.id.startsWith("publish") || job.id.includes("cloud") || job.id.includes("iks") || job.id.includes("tke") || job.id.includes("octopus");
+        const isLint = job.id.includes("lint") || job.id.includes("clippy") || job.id.includes("format");
+        const isBuild = job.id.includes("build") || job.id.includes("compile") || job.id.includes("webpack");
+        const isTest = job.id.includes("test") || job.id.includes("ci");
+
+        let icon = "🧪";
+        let category = "CI Pipeline";
+        if (isDeploy) {
+          icon = "🚀";
+          category = "CD Deployment";
+        } else if (isLint) {
+          icon = "🧹";
+          category = "Code Quality & Linting";
+        } else if (isBuild) {
+          icon = "📦";
+          category = "Build Pipeline";
+        } else if (isTest) {
+          icon = "🧪";
+          category = "Test Suite";
+        }
+
         const needsTag = job.needs && job.needs.length > 0 ? ` (after: ${job.needs.join(", ")})` : "";
         return {
           value: job.id,
@@ -85,7 +136,7 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
         options: jobOptions,
         initialValues: jobOptions.map(j => j.value),
         required: true,
-        maxItems: 15
+        maxItems: 20
       });
 
       if (isCancel(selectedJobIds)) {
@@ -96,7 +147,7 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
       const activeJobIds = new Set(selectedJobIds as string[]);
 
       const enableCaching = await confirm({
-        message: "⚡ Enable automatic dependency caching (npm/pnpm/yarn/pip/go/cargo)?",
+        message: "⚡ Enable automatic dependency caching (npm/pnpm/yarn/pip/go/cargo/maven/gradle/composer/sbt/renv)?",
         initialValue: true
       });
 
@@ -106,7 +157,7 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
       }
 
       const enableHardening = await confirm({
-        message: "🛡️  Enable production hardening (15m job timeouts & cancel-in-progress concurrency)?",
+        message: "🛡️  Enable production hardening (15m job timeouts, concurrency cancellation & least-privilege permissions)?",
         initialValue: true
       });
 
@@ -121,12 +172,12 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
           {
             value: "standard",
             label: `🛡️  Standard ${pc.green("(Recommended)")}`,
-            hint: "CodeQL SAST + Trivy container scan + Dependabot + Lockfile audits"
+            hint: "CodeQL SAST + Trivy container scan + Dependabot + Lockfile audits (npm/cargo/pip/govulncheck)"
           },
           {
             value: "strict",
             label: "🔒 Strict",
-            hint: "Harden-Runner + Gitleaks + Semgrep + Daily Dependabot + Zero-tolerance gating"
+            hint: "Harden-Runner + Gitleaks + Semgrep + Anchore Grype + Daily Dependabot + Zero-tolerance gating"
           },
           {
             value: "minimal",
@@ -136,7 +187,7 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
           {
             value: "custom",
             label: "🛠️  Custom (Fine-Grained Adjustments)",
-            hint: "Selectively toggle CodeQL, Google OSV, Dependabot, Trivy, Gitleaks, etc."
+            hint: "Selectively toggle from 22+ security modules (CodeQL, OSV, Semgrep, Trivy, Gitleaks, Anchore, StackHawk, etc.)"
           },
           {
             value: "none",
@@ -157,14 +208,17 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
 
       if (securityLevelInput === "custom") {
         const basePolicy = resolveSecurityPolicy(state, "standard");
+        const recommendedSet = new Set<string>();
         const scannerOptions: Array<{ value: string; label: string; hint?: string }> = [];
 
+        // 1. Core Ecosystem Security
         if (basePolicy.codeql.enabled && basePolicy.codeql.languages.length > 0) {
           scannerOptions.push({
             value: "codeql",
             label: "🛡️  GitHub CodeQL SAST",
             hint: `Deep multi-language code analysis for ${basePolicy.codeql.languages.join(", ")}`
           });
+          recommendedSet.add("codeql");
         }
 
         if (basePolicy.dependabot.enabled && basePolicy.dependabot.ecosystems.length > 0) {
@@ -174,25 +228,7 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
             label: "🤖 Dependabot",
             hint: `Automated version & security PRs for ${ecosystems} (with PR grouping)`
           });
-        }
-
-        scannerOptions.push({
-          value: "osv-scanner",
-          label: "🔍 Google OSV-Scanner",
-          hint: "Open-source CVE vulnerability scan across repository lockfiles"
-        });
-
-        if (basePolicy.containerScanning.dockerfiles.length > 0) {
-          scannerOptions.push({
-            value: "container-trivy",
-            label: "📦 Trivy Container & IaC Scan",
-            hint: "Vulnerability analysis for Dockerfiles & manifests"
-          });
-          scannerOptions.push({
-            value: "hadolint",
-            label: "🐳 Hadolint Dockerfile Linter",
-            hint: "Lints Dockerfile best practices & security rules"
-          });
+          recommendedSet.add("dependabot");
         }
 
         if (basePolicy.nativeAudits.length > 0) {
@@ -202,6 +238,16 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
             label: "⚡ Native Lockfile Audits",
             hint: `Runs native audits (${auditTools})`
           });
+          recommendedSet.add("native-audits");
+        }
+
+        if (basePolicy.containerScanning.dockerfiles.length > 0) {
+          scannerOptions.push({
+            value: "container-trivy",
+            label: "📦 Trivy Container & IaC Scan",
+            hint: "Vulnerability analysis for Dockerfiles & manifests"
+          });
+          recommendedSet.add("container-trivy");
         }
 
         scannerOptions.push({
@@ -209,25 +255,32 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
           label: "🔑 Gitleaks (Secret Scanning)",
           hint: "Detects hardcoded secrets & credentials in git history"
         });
+        recommendedSet.add("gitleaks");
 
-        scannerOptions.push({
-          value: "semgrep",
-          label: "🧠 Semgrep SAST",
-          hint: "Universal static application security testing"
-        });
+        // 2. All Relevant Security Scanner Plugins
+        const baseScannersSet = new Set(basePolicy.codeScanning.scanners.map(s => s.tool));
+        for (const scanner of ALL_SCANNERS) {
+          if (scanner.isApplicable && !scanner.isApplicable(state)) {
+            continue;
+          }
 
-        scannerOptions.push({
-          value: "scorecard",
-          label: "📊 OpenSSF Scorecard",
-          hint: "Supply chain security posture & repository health"
-        });
+          if (baseScannersSet.has(scanner.id)) {
+            recommendedSet.add(scanner.id);
+          }
+          const icon = scanner.icon || "🔒";
+          scannerOptions.push({
+            value: scanner.id,
+            label: `${icon} ${scanner.name}`,
+            hint: scanner.description || scanner.jobName
+          });
+        }
 
         const selectedCustom = await multiselect({
           message: "Toggle Security Modules (Space to toggle, Enter to confirm):",
           options: scannerOptions,
-          initialValues: scannerOptions.slice(0, 5).map(o => o.value),
+          initialValues: scannerOptions.filter(o => recommendedSet.has(o.value)).map(o => o.value),
           required: false,
-          maxItems: 15
+          maxItems: 30
         });
 
         if (isCancel(selectedCustom)) {
@@ -236,6 +289,20 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
         }
 
         const selectedSet = new Set(selectedCustom as string[]);
+
+        const selectedScanners: CodeScanningTargetConfig[] = [];
+        for (const scanner of ALL_SCANNERS) {
+          if (selectedSet.has(scanner.id)) {
+            selectedScanners.push({
+              tool: scanner.id,
+              targetPath: scanner.id === "hadolint" && basePolicy.containerScanning.dockerfiles.length > 0
+                ? basePolicy.containerScanning.dockerfiles[0]
+                : undefined,
+              failOnError: false,
+              uploadSarif: true
+            });
+          }
+        }
 
         const customPolicy: SecurityPolicyIR = {
           level: "standard",
@@ -250,13 +317,8 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
             scheduleCron: basePolicy.codeql.scheduleCron
           },
           codeScanning: {
-            enabled: selectedSet.has("osv-scanner") || selectedSet.has("hadolint") || selectedSet.has("semgrep") || selectedSet.has("scorecard"),
-            scanners: [
-              ...(selectedSet.has("osv-scanner") ? [{ tool: "osv-scanner" as const, failOnError: false, uploadSarif: true }] : []),
-              ...(selectedSet.has("hadolint") && basePolicy.containerScanning.dockerfiles.length > 0 ? [{ tool: "hadolint" as const, targetPath: basePolicy.containerScanning.dockerfiles[0], failOnError: false, uploadSarif: true }] : []),
-              ...(selectedSet.has("semgrep") ? [{ tool: "semgrep" as const, failOnError: false, uploadSarif: true }] : []),
-              ...(selectedSet.has("scorecard") ? [{ tool: "scorecard" as const, failOnError: false, uploadSarif: true }] : [])
-            ]
+            enabled: selectedScanners.length > 0,
+            scanners: selectedScanners
           },
           containerScanning: {
             enabled: selectedSet.has("container-trivy") && basePolicy.containerScanning.dockerfiles.length > 0,
@@ -306,6 +368,15 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
       if (securityArtifacts.dependabotYaml) {
         note(securityArtifacts.dependabotYaml, "Generated Dependabot (.github/dependabot.yml)");
       }
+      if (securityArtifacts.codeqlYaml) {
+        note(securityArtifacts.codeqlYaml, "Generated CodeQL SAST (.github/workflows/codeql.yml)");
+      }
+      if (securityArtifacts.securityWorkflowYaml) {
+        note(securityArtifacts.securityWorkflowYaml, "Generated Security Scans (.github/workflows/security.yml)");
+      }
+      if (securityArtifacts.codeScanningYaml) {
+        note(securityArtifacts.codeScanningYaml, "Generated Code Scanning SAST (.github/workflows/code-scanning.yml)");
+      }
 
       if (isRemoteUrl(target)) {
         const repoName = target.split("/").pop()?.replace(/\.git$/, "") || "repo";
@@ -351,6 +422,9 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
         if (securityArtifacts.securityWorkflowYaml) {
           await fs.writeFile(path.join(workflowsDir, "security.yml"), securityArtifacts.securityWorkflowYaml, "utf8");
         }
+        if (securityArtifacts.codeScanningYaml) {
+          await fs.writeFile(path.join(workflowsDir, "code-scanning.yml"), securityArtifacts.codeScanningYaml, "utf8");
+        }
 
         outro(pc.green(`✨ Successfully saved configurations to ${pc.bold(baseDir)}`));
         return;
@@ -380,6 +454,9 @@ export async function runInteractiveWizard(initialTarget?: string): Promise<void
       }
       if (securityArtifacts.securityWorkflowYaml) {
         await fs.writeFile(path.join(targetWorkflowsDir, "security.yml"), securityArtifacts.securityWorkflowYaml, "utf8");
+      }
+      if (securityArtifacts.codeScanningYaml) {
+        await fs.writeFile(path.join(targetWorkflowsDir, "code-scanning.yml"), securityArtifacts.codeScanningYaml, "utf8");
       }
 
       outro(

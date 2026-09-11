@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const sysdigScanner: ScannerPlugin = {
   id: "sysdig",
   name: "Sysdig Secure",
+  icon: "🛡️",
+  description: "Sysdig Secure container image vulnerability and compliance scanning",
   jobKey: "sysdig",
   jobName: "Container Security (Sysdig)",
   timeoutMinutes: 15,
+  isApplicable(state: ProjectState) {
+    return state.infrastructure.some(i => i.name === "docker" || i.evidence.some(e => e.source.toLowerCase().includes("dockerfile")));
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

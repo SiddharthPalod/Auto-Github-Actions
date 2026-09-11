@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const hadolintScanner: ScannerPlugin = {
   id: "hadolint",
-  name: "Hadolint",
+  name: "Hadolint Dockerfile Linter",
+  icon: "🐳",
+  description: "Lints Dockerfile best practices & security rules",
   jobKey: "hadolint",
   jobName: "Dockerfile Lint (Hadolint)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.infrastructure.some(i => i.name === "docker" || i.evidence.some(e => e.source.toLowerCase().includes("dockerfile")));
+  },
   buildSteps(scanner: CodeScanningTargetConfig) {
     const target = scanner.targetPath ?? "Dockerfile";
     return [

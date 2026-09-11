@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const scorecardScanner: ScannerPlugin = {
   id: "scorecard",
   name: "OpenSSF Scorecard",
+  icon: "📊",
+  description: "Supply chain security posture & repository health evaluation",
   jobKey: "scorecard",
   jobName: "Supply Chain Security (OpenSSF Scorecard)",
   timeoutMinutes: 15,
+  isApplicable(_state: ProjectState) {
+    return true;
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

@@ -1,4 +1,4 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ScannerPlugin } from "./types.js";
 import { semgrepScanner } from "./semgrep.js";
 import { hadolintScanner } from "./hadolint.js";
 import { tfsecScanner } from "./tfsec.js";

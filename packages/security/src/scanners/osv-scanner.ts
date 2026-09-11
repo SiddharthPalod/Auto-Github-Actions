@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const osvScanner: ScannerPlugin = {
   id: "osv-scanner",
-  name: "OSV-Scanner",
+  name: "Google OSV-Scanner",
+  icon: "🔍",
+  description: "Open-source CVE vulnerability scan across repository lockfiles",
   jobKey: "osv-scanner",
   jobName: "Open Source Vulnerability Scan (Google OSV)",
   timeoutMinutes: 10,
+  isApplicable(_state: ProjectState) {
+    return true;
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

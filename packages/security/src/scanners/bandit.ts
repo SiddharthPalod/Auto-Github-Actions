@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const banditScanner: ScannerPlugin = {
   id: "bandit",
-  name: "Bandit",
+  name: "Bandit Python SAST",
+  icon: "🐍",
+  description: "Security linter designed to find common security issues in Python code",
   jobKey: "bandit",
   jobName: "Python Security Scan (Bandit)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.runtime.some(r => r.name === "python");
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

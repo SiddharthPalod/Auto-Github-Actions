@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const checkmarxScanner: ScannerPlugin = {
   id: "checkmarx",
-  name: "Checkmarx SAST",
+  name: "Checkmarx AST SAST",
+  icon: "🏢",
+  description: "Enterprise-grade static application security testing",
   jobKey: "checkmarx",
   jobName: "Checkmarx AST Security Scan",
   timeoutMinutes: 20,
+  isApplicable(_state: ProjectState) {
+    return true;
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

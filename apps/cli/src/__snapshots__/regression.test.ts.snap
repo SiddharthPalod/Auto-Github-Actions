@@ -512,6 +512,29 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
+  sysdig:
+    name: Container Security (Sysdig)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Harden GitHub Actions Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Sysdig Inline Scan
+        uses: sysdiglabs/scan-action@v3
+        with:
+          image-tag: \${{ env.IMAGE_NAME || 'app:latest' }}
+          sysdig-secure-token: \${{ secrets.SYSDIG_SECURE_TOKEN }}
+          output-format: sarif
+          output-file: sysdig.sarif
+      - name: Upload Sysdig scan results
+        if: always() && hashFiles('sysdig.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sysdig.sarif
 "
 `;
 

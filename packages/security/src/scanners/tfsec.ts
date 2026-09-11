@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const tfsecScanner: ScannerPlugin = {
   id: "tfsec",
-  name: "tfsec",
+  name: "tfsec IaC Scanner",
+  icon: "📜",
+  description: "Static analysis for Terraform templates security misconfigurations",
   jobKey: "tfsec",
   jobName: "Terraform IaC Security (tfsec)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.infrastructure.some(i => i.name === "terraform");
+  },
   buildSteps(scanner: CodeScanningTargetConfig) {
     return [
       {

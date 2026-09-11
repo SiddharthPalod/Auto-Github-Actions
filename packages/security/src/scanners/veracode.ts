@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const veracodeScanner: ScannerPlugin = {
   id: "veracode",
-  name: "Veracode",
+  name: "Veracode Static Analysis",
+  icon: "🔐",
+  description: "Veracode Static Analysis pipeline security scan",
   jobKey: "veracode",
   jobName: "Veracode Security Scan",
   timeoutMinutes: 20,
+  isApplicable(_state: ProjectState) {
+    return true;
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

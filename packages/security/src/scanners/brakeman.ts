@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const brakemanScanner: ScannerPlugin = {
   id: "brakeman",
-  name: "Brakeman",
+  name: "Brakeman Ruby/Rails SAST",
+  icon: "💎",
+  description: "Static analysis security vulnerability scanner for Ruby on Rails",
   jobKey: "brakeman",
   jobName: "Ruby / Rails Security Scan (Brakeman)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.runtime.some(r => r.name === "ruby") || state.frameworks.some(f => f.name === "rails");
+  },
   buildSteps(_scanner: CodeScanningTargetConfig) {
     return [
       {

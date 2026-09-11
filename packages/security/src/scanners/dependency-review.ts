@@ -1,12 +1,18 @@
-﻿import type { ScannerPlugin } from "./types.js";
+import type { ProjectState } from "@auto-gha/state";
+import type { ScannerPlugin } from "./types.js";
 import type { CodeScanningTargetConfig } from "../types.js";
 
 export const dependencyReviewScanner: ScannerPlugin = {
   id: "dependency-review",
-  name: "Dependency Review",
+  name: "GitHub Dependency Review",
+  icon: "🔍",
+  description: "Prevents vulnerable dependencies from being introduced in PRs",
   jobKey: "dependency-review",
   jobName: "Dependency Review (PR)",
   timeoutMinutes: 10,
+  isApplicable(state: ProjectState) {
+    return state.packageManager.length > 0 || state.runtime.length > 0;
+  },
   buildSteps(scanner: CodeScanningTargetConfig) {
     return [
       {
