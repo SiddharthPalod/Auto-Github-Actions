@@ -80,6 +80,13 @@ pnpm --filter auto-gha dev .
 pnpm -r test
 ```
 
+### 🧩 Extending the Engine (Developer Guide)
+
+- **Adding support for a new language, tool, or framework**: Create a single vertical plugin in `packages/registry/src/plugins/<name>.ts` implementing `AutoGhaPlugin` (defining `detection`, `provides`, and strongly-typed `StepIR` AST `resolvers`), and register it in `packages/registry/src/index.ts`. The `@auto-gha/scanner`, `@auto-gha/planner`, and `@auto-gha/resolver` engines automatically discover and orchestrate it without modifying engine internals.
+- **Adding new Cloud / Deployment targets** (e.g., Vercel, Fly.io, Netlify, Cloudflare): Create a plugin in `packages/registry/src/plugins/<target>.ts` with `category: 'deployment'`, detection manifests, and a `deploy: (ctx) => StepIR[]` AST resolver. The planner automatically wires the DAG dependency ensuring `deploy` only runs after all tests pass.
+- **Adding a new security linter or scanner**: Extend `@auto-gha/security` by adding dedicated security compilers in `packages/security/src/compilers/` (for global SAST, secret, or container scanners), or add tool lint steps directly in the language plugin's `resolvers.lint` hook in `@auto-gha/registry`.
+- **Adding AST Optimizations** (e.g., custom caching rules, concurrency, or artifact handling): Write a new optimization pass in `packages/compiler/src/passes/` to inspect or mutate the strongly-typed `WorkflowIR` AST before YAML serialization.
+
 ---
 
 ## 📄 License

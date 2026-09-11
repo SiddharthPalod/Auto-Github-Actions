@@ -69,6 +69,13 @@ To run the full test suite:
 pnpm -r test
 ```
 
+### 🧩 Extending the Engine (Developer Guide)
+
+- **Adding support for a new language, tool, or framework**: Create a single vertical plugin in `packages/registry/src/plugins/<name>.ts` implementing `AutoGhaPlugin` (defining `detection`, `provides`, and strongly-typed `StepIR` AST `resolvers`), and register it in `packages/registry/src/index.ts`. The `@auto-gha/scanner`, `@auto-gha/planner`, and `@auto-gha/resolver` engines automatically discover and orchestrate it without modifying engine internals.
+- **Adding new Cloud / Deployment targets** (e.g., Vercel, Fly.io, Netlify, Cloudflare): Create a plugin in `packages/registry/src/plugins/<target>.ts` with `category: 'deployment'`, detection manifests, and a `deploy: (ctx) => StepIR[]` AST resolver. The planner automatically wires the DAG dependency ensuring `deploy` only runs after all tests pass.
+- **Adding a new security linter or scanner**: Extend `@auto-gha/security` by adding dedicated security compilers in `packages/security/src/compilers/` (for global SAST, secret, or container scanners), or add tool lint steps directly in the language plugin's `resolvers.lint` hook in `@auto-gha/registry`.
+- **Adding AST Optimizations** (e.g., custom caching rules, concurrency, or artifact handling): Write a new optimization pass in `packages/compiler/src/passes/` to inspect or mutate the strongly-typed `WorkflowIR` AST before YAML serialization.
+
 ---
 
 ## 🏛️ Compiler Pipeline
@@ -133,10 +140,11 @@ Repository / Remote Git URL
 | Package | Role | Description |
 | :--- | :--- | :--- |
 | **`@auto-gha/state`** | Data Contracts | Pure TypeScript interfaces representing discovered project facts, infrastructure markers, and evidence. |
-| **`@auto-gha/scanner`** | Phase 1 Engine | High-performance filesystem crawler and deterministic detectors for Node, Python, Go, Rust, Docker, Java, AWS, GCP, Azure, K8s, Terraform, etc. |
-| **`@auto-gha/planner`** | Phase 2 Engine | Capability vocabulary normalizer and declarative rule evaluation engine for CI and CD. |
-| **`@auto-gha/resolver`** | Phase 3 Engine | Knowledge catalog containing normalized GitHub Starter Workflows with provenance tracking. |
 | **`@auto-gha/workflow-ir`** | Phase 4 AST | Strongly-typed Workflow Intermediate Representation (Jobs, DAG `needs`, Environments, Conditions, Steps). |
+| **`@auto-gha/registry`** | Plugin Ecosystem | Declarative vertical plugins for languages, frameworks, cloud targets, and tools with AST step resolvers. |
+| **`@auto-gha/scanner`** | Phase 1 Engine | High-performance filesystem crawler and dynamic detection evaluator across registered plugins. |
+| **`@auto-gha/planner`** | Phase 2 Engine | Capability vocabulary normalizer and declarative DAG rule evaluation engine for CI and CD. |
+| **`@auto-gha/resolver`** | Phase 3 Engine | Dynamic step resolution engine dispatching to vertical plugin AST generators with provenance tracking. |
 | **`@auto-gha/compiler`** | Phase 4/5 Compiler | Workflow Builder, DAG Cycle Validator, and deterministic YAML emitter with optimization passes. |
 | **`@auto-gha/security`** | Phase 6 Engine | Security Policy IR & Multi-artifact Security Compiler (Dependabot, CodeQL, Code Scanning, Trivy, Audits). |
 | **`@auto-gha/reconciliation`** | Phase 7 Engine | Semantic AST diffing & non-destructive merging with existing `.github/workflows`. |

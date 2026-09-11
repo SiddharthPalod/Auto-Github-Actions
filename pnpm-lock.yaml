@@ -112,6 +112,9 @@ importers:
 
   packages/planner:
     dependencies:
+      '@auto-gha/registry':
+        specifier: workspace:*
+        version: link:../registry
       '@auto-gha/state':
         specifier: workspace:*
         version: link:../state
@@ -148,11 +151,33 @@ importers:
         specifier: ^3.0.0
         version: 3.2.7(@types/node@22.20.1)(tsx@4.23.12)(yaml@2.9.0)
 
+  packages/registry:
+    dependencies:
+      '@auto-gha/state':
+        specifier: workspace:*
+        version: link:../state
+      '@auto-gha/workflow-ir':
+        specifier: workspace:*
+        version: link:../workflow-ir
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@22.20.1)(tsx@4.23.12)(yaml@2.9.0)
+
   packages/resolver:
     dependencies:
       '@auto-gha/planner':
         specifier: workspace:*
         version: link:../planner
+      '@auto-gha/registry':
+        specifier: workspace:*
+        version: link:../registry
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -166,6 +191,9 @@ importers:
 
   packages/scanner:
     dependencies:
+      '@auto-gha/registry':
+        specifier: workspace:*
+        version: link:../registry
       '@auto-gha/state':
         specifier: workspace:*
         version: link:../state

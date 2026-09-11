@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@auto-gha/planner",
   "version": "0.0.1",
   "private": true,
@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@auto-gha/registry": "workspace:*",
     "@auto-gha/state": "workspace:*"
   },
   "devDependencies": {

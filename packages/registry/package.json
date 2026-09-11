@@ -1,5 +1,5 @@
 {
-  "name": "@auto-gha/resolver",
+  "name": "@auto-gha/registry",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,12 +10,12 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@auto-gha/planner": "workspace:*",
-    "@auto-gha/registry": "workspace:*"
+    "@auto-gha/state": "workspace:*",
+    "@auto-gha/workflow-ir": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^3.0.0"
+    "@types/node": "^22.20.1",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   }
 }

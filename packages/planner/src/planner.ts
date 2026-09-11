@@ -1,58 +1,15 @@
-﻿import type { ProjectState } from "@auto-gha/state";
+import type { ProjectState } from "@auto-gha/state";
 import type { Rule, WorkflowPlan, PlannedAction } from "./types.js";
 import { resolveCapabilities } from "./capabilities.js";
-import { goBuildRule } from "./rules/go.js";
-import { pythonRule } from "./rules/python.js";
-import { dockerBuildRule } from "./rules/docker.js";
-import { nodeSetupRule } from "./rules/node.js";
-import { rustBuildRule } from "./rules/rust.js";
-import { javaRule } from "./rules/java.js";
-import { dotnetRule } from "./rules/dotnet.js";
-import { rubyRule } from "./rules/ruby.js";
-import { phpRule } from "./rules/php.js";
-import { dartRule } from "./rules/dart.js";
-import { elixirRule } from "./rules/elixir.js";
-import { cppRule } from "./rules/cpp.js";
-import { denoRule } from "./rules/deno.js";
-import { swiftRule } from "./rules/swift.js";
-
-import { deployAwsRule } from "./rules/deploy-aws.js";
-import { deployGcpRule } from "./rules/deploy-gcp.js";
-import { deployAzureRule } from "./rules/deploy-azure.js";
-import { deployK8sRule } from "./rules/deploy-k8s.js";
-import { deployTerraformRule } from "./rules/deploy-terraform.js";
-import { deployGhcrRule } from "./rules/deploy-ghcr.js";
-
+import { generateRulesFromPlugins } from "./rules/plugin-rules.js";
 import { jestRule, vitestRule, playwrightRule } from "./rules/testing.js";
 
-const rules: Rule[] = [
-  nodeSetupRule,
-  goBuildRule,
-  pythonRule,
-  dockerBuildRule,
-  jestRule,
-  vitestRule,
-  playwrightRule,
-  rustBuildRule,
-  javaRule,
-  dotnetRule,
-  rubyRule,
-  phpRule,
-  dartRule,
-  elixirRule,
-  cppRule,
-  denoRule,
-  swiftRule,
-  deployAwsRule,
-  deployGcpRule,
-  deployAzureRule,
-  deployK8sRule,
-  deployTerraformRule,
-  deployGhcrRule
-];
+const testingRules: Rule[] = [jestRule, vitestRule, playwrightRule];
 
 export function planWorkflow(state: ProjectState): WorkflowPlan {
   const capabilities = resolveCapabilities(state);
+  const pluginRules = generateRulesFromPlugins();
+  const rules = [...pluginRules, ...testingRules];
 
   const actions: PlannedAction[] = [];
   const matchedRules: string[] = [];
