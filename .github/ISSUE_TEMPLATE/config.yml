@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📦 npm Package
+    url: https://www.npmjs.com/package/auto-gha
+    about: View the published package on npm
+  - name: 💬 Discussions
+    url: https://github.com/SiddharthPalod/Auto-Github-Actions/discussions
+    about: Ask questions and share ideas in GitHub Discussions

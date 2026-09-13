@@ -270,6 +270,22 @@ The engine configures downstream, environment-guarded Continuous Deployment (CD)
 
 ---
 
+## 📋 Community
+
+**Come build it.** Auto GitHub Actions is an open-source compiler engine — add a language plugin, a deployment target, a security scanner, an optimization pass. Every contribution makes CI/CD smarter for everyone.
+
+| Document | Description |
+| :--- | :--- |
+| **[Contributing Guide](CONTRIBUTING.md)** | Setup instructions, architecture overview, coding style, and how to extend the engine |
+| **[Code of Conduct](CODE_OF_CONDUCT.md)** | Our pledge to maintain a welcoming, inclusive community |
+| **[Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.yml)** | Report bugs with structured reproduction steps |
+| **[Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.yml)** | Suggest new plugins, scanners, or improvements |
+| **[Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md)** | PR checklist ensuring build, tests, and conventions |
+
+**Maintainer:** [Siddharth Palod](https://github.com/SiddharthPalod)
+
+---
+
 ## 📄 License
 
 MIT © [Siddharth Palod](https://github.com/SiddharthPalod)

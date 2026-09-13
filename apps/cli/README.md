@@ -90,6 +90,17 @@ pnpm -r test
 
 ---
 
+## 📋 Community
+
+Want to contribute? Check out the monorepo's community resources:
+
+- **[Contributing Guide](../../CONTRIBUTING.md)** — Setup, architecture, coding style, and extension guide
+- **[Code of Conduct](../../CODE_OF_CONDUCT.md)** — Community standards
+- **[Bug Reports](../../.github/ISSUE_TEMPLATE/bug_report.yml)** / **[Feature Requests](../../.github/ISSUE_TEMPLATE/feature_request.yml)** — Issue templates
+- **[Pull Request Template](../../.github/PULL_REQUEST_TEMPLATE.md)** — PR checklist
+
+---
+
 ## 📄 License
 
 MIT © [Siddharth Palod](https://github.com/SiddharthPalod)
