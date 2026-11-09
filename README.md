@@ -15,6 +15,10 @@ A deterministic policy compiler that inspects codebases, deduces capabilities, r
 🔗 **GitHub Repository**: [https://github.com/SiddharthPalod/Auto-Github-Actions](https://github.com/SiddharthPalod/Auto-Github-Actions)
 
 ---
+[![AutoGHA Demo](https://img.youtube.com/vi/50o12fLXX8E/maxresdefault.jpg)](https://youtu.be/50o12fLXX8E)
+[Watch the full demo on YouTube](https://youtu.be/50o12fLXX8E)
+
+---
 
 ## ⚡ Instant Usage
 
